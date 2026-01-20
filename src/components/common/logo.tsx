@@ -16,9 +16,9 @@ const Logo: FC<LogoProps> = ({ className }) => {
   return (
     <div className={cn('flex items-center gap-3', className)}>
       <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
-        <span className="text-lg font-bold">SB</span>
+        <span className="text-lg font-bold">OR</span>
       </div>
-      <h1 className="text-lg font-bold">{t('AI Study Buddy')}</h1>
+      <h1 className="text-lg font-bold">{t('App Name')}</h1>
     </div>
   );
 };

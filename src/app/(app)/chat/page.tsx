@@ -35,6 +35,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from '@/hooks/use-translation';
 
 const formSchema = z.object({
   query: z.string().min(2, {
@@ -49,14 +50,14 @@ type Message = {
   isError?: boolean;
 };
 
-const WelcomeMessage: Message = {
-  id: 0,
-  role: 'assistant',
-  content: "Hello! I am your AI Study Buddy. Select a mode on the left and let's start learning.",
-};
-
 export default function ChatPage() {
   const [isPending, startTransition] = useTransition();
+  const { t } = useTranslation();
+  const WelcomeMessage: Message = {
+    id: 0,
+    role: 'assistant',
+    content: t('Hello! I am your AI Study Buddy. Select a mode on the left and let\'s start learning.'),
+  };
   const [messages, setMessages] = useState<Message[]>([WelcomeMessage]);
   const [error, setError] = useState<string | null>(null);
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -182,14 +183,14 @@ export default function ChatPage() {
       return (
         <div className="flex items-center gap-2">
           <Loader2 className="h-5 w-5 animate-spin" />
-          <span>Thinking...</span>
+          <span>{t('Thinking...')}</span>
         </div>
       );
     }
     return (
       <p className={message.isError ? 'text-destructive' : ''}>
         {message.isError && (
-          <span className="font-bold">Error: </span>
+          <span className="font-bold">{t('Error: ')}</span>
         )}
         {message.content}
       </p>
@@ -239,7 +240,7 @@ export default function ChatPage() {
                       ) : (
                         <Volume2 className="mr-1 h-3 w-3" />
                       )}
-                      Read Aloud
+                      {t('Read Aloud')}
                     </Button>
                     <Button
                       variant="ghost"
@@ -248,7 +249,7 @@ export default function ChatPage() {
                       className="h-auto p-1 text-xs text-muted-foreground"
                     >
                       <Copy className="mr-1 h-3 w-3" />
-                      Copy
+                      {t('Copy')}
                     </Button>
                   </div>
                 )}
@@ -262,7 +263,7 @@ export default function ChatPage() {
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="relative">
               <Textarea
-                placeholder="Type a topic or concept..."
+                placeholder={t('Type a topic or concept...')}
                 className="min-h-12 resize-none rounded-full py-3 pl-12 pr-28"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && !e.shiftKey) {
@@ -289,7 +290,7 @@ export default function ChatPage() {
             </form>
           </Form>
           <p className="mt-2 text-center text-xs text-muted-foreground">
-            AI can make mistakes. Always verify important information.
+            {t('AI can make mistakes. Always verify important information.')}
           </p>
         </div>
       </div>

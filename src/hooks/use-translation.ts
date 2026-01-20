@@ -15,7 +15,7 @@ export type TranslationMessages = {
   'Dark Mode': string;
   'Language': string;
   'Select language': string;
-  'AI Study Buddy': string;
+  'App Name': string;
 
   // Tabs
   'Interactive Prototype': string;
@@ -95,11 +95,11 @@ const translations: Record<string, Partial<TranslationMessages>> = {
     'Dark Mode': 'Dark Mode',
     'Language': 'Language',
     'Select language': 'Select language',
-    'AI Study Buddy': 'AI Study Buddy',
+    'App Name': 'ORIoN : AI STUDY BUDDY',
     'Interactive Prototype': 'Interactive Prototype',
     'System Architecture': 'System Architecture',
     'Tech Specs': 'Tech Specs',
-    'Hello! I am your AI Study Buddy. Select a mode on the left and let\'s start learning.': 'Hello! I am your AI Study Buddy. Select a mode on the left and let\'s start learning.',
+    'Hello! I am your AI Study Buddy. Select a mode on the left and let\'s start learning.': 'Hello! I am ORIoN : AI STUDY BUDDY. Select a mode on the left and let\'s start learning.',
     'Thinking...': 'Thinking...',
     'Error: ': 'Error: ',
     'Read Aloud': 'Read Aloud',
@@ -163,11 +163,11 @@ const translations: Record<string, Partial<TranslationMessages>> = {
     'Dark Mode': 'Modo Oscuro',
     'Language': 'Idioma',
     'Select language': 'Seleccionar idioma',
-    'AI Study Buddy': 'Amigo de Estudio IA',
+    'App Name': 'ORIoN : COMPAÑERO DE ESTUDIO IA',
     'Interactive Prototype': 'Prototipo Interactivo',
     'System Architecture': 'Arquitectura del Sistema',
     'Tech Specs': 'Especificaciones Técnicas',
-    'Hello! I am your AI Study Buddy. Select a mode on the left and let\'s start learning.': '¡Hola! Soy tu Amigo de Estudio IA. Selecciona un modo a la izquierda y empecemos a aprender.',
+    'Hello! I am your AI Study Buddy. Select a mode on the left and let\'s start learning.': '¡Hola! Soy ORIoN : COMPAÑERO DE ESTUDIO IA. Selecciona un modo a la izquierda y empecemos a aprender.',
     'Thinking...': 'Pensando...',
     'Error: ': 'Error: ',
     'Read Aloud': 'Leer en voz alta',
