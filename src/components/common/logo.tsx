@@ -15,10 +15,11 @@ const Logo: FC<LogoProps> = ({ className }) => {
     <div className={cn('flex items-center gap-3', className)}>
       <div className="h-8 w-8 text-primary">
         <svg
+          width="64"
+          height="64"
           viewBox="0 0 64 64"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
-          className="h-full w-full"
         >
           <path
             d="M32 56C45.2548 56 56 45.2548 56 32C56 18.7452 45.2548 8 32 8C18.7452 8 8 18.7452 8 32C8 45.2548 18.7452 56 32 56Z"
@@ -27,21 +28,21 @@ const Logo: FC<LogoProps> = ({ className }) => {
             strokeOpacity="0.4"
           />
           <path
-            d="M32 48V32L44 24"
-            stroke="currentColor"
-            strokeWidth="4"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-          <path
             d="M24 20L20 24"
             stroke="currentColor"
             strokeWidth="4"
             strokeLinecap="round"
             strokeLinejoin="round"
           />
-           <path
+          <path
             d="M44 44L40 40"
+            stroke="currentColor"
+            strokeWidth="4"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <path
+            d="M32 48V32L44 24"
             stroke="currentColor"
             strokeWidth="4"
             strokeLinecap="round"
