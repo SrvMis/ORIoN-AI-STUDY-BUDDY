@@ -10,6 +10,8 @@ import {
   MessageSquare,
   Network,
   Cpu,
+  BookText,
+  Feather,
 } from 'lucide-react';
 import Logo from '@/components/common/logo';
 import { ThemeToggle } from '@/components/common/theme-toggle';
@@ -25,6 +27,8 @@ import {
 const sidebarNavItems = [
   { href: '/chat', icon: GraduationCap, label: 'Explain Topic' },
   { href: '/quiz', icon: FileText, label: 'Generate Quiz' },
+  { href: '/summarizer', icon: BookText, label: 'Summarize Text' },
+  { href: '/story', icon: Feather, label: 'Create a Story' },
 ];
 
 const tabNavItems = [
@@ -35,6 +39,10 @@ const tabNavItems = [
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+
+  const activeTab = ['/chat', '/quiz', '/summarizer', '/story'].includes(pathname)
+    ? '/chat'
+    : pathname;
 
   return (
     <div className="flex min-h-screen bg-background font-sans text-foreground">
@@ -89,7 +97,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       {/* Main Content */}
       <div className="flex flex-1 flex-col">
         <header className="border-b bg-card px-6 py-2">
-          <Tabs value={pathname} className="w-full">
+          <Tabs value={activeTab} className="w-full">
             <TabsList>
               {tabNavItems.map((item) => (
                 <Link key={item.href} href={item.href}>
