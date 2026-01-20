@@ -8,6 +8,8 @@ import {
   ClipboardCheck,
   FileText,
   BotMessageSquare,
+  Network,
+  Cpu,
 } from 'lucide-react';
 import {
   SidebarProvider,
@@ -27,6 +29,12 @@ const navItems = [
   { href: '/quiz', icon: ClipboardCheck, label: 'Quiz Generator' },
   { href: '/summarizer', icon: FileText, label: 'Text Summarizer' },
   { href: '/story', icon: BotMessageSquare, label: 'Story Generator' },
+  {
+    href: '/system-architecture',
+    icon: Network,
+    label: 'System Architecture',
+  },
+  { href: '/tech-specs', icon: Cpu, label: 'Tech Specs' },
 ];
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
