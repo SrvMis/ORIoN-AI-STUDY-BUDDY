@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { answerQuestion } from '@/ai/flows/ai-answer-questions';
+import { speakText } from '@/ai/flows/text-to-speech';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -22,7 +23,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Loader2, Sparkles } from 'lucide-react';
+import { Loader2, Sparkles, Volume2 } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 
 const formSchema = z.object({
@@ -38,6 +39,8 @@ export default function ChatPage() {
   const [isPending, startTransition] = useTransition();
   const [answer, setAnswer] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -51,6 +54,10 @@ export default function ChatPage() {
     startTransition(async () => {
       setAnswer(null);
       setError(null);
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.src = '';
+      }
       try {
         const result = await answerQuestion(values);
         setAnswer(result.answer);
@@ -61,8 +68,35 @@ export default function ChatPage() {
     });
   }
 
+  const handleReadAloud = async (text: string) => {
+    if (isSpeaking) {
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+      setIsSpeaking(false);
+      return;
+    }
+    setIsSpeaking(true);
+    setError(null);
+    try {
+      const { audio } = await speakText(text);
+      if (audioRef.current) {
+        audioRef.current.src = audio;
+        audioRef.current.play();
+        audioRef.current.onended = () => {
+          setIsSpeaking(false);
+        };
+      }
+    } catch (e: any) {
+      setError(e.message || 'An error occurred during text-to-speech.');
+      console.error(e);
+      setIsSpeaking(false);
+    }
+  };
+
   return (
     <div className="container mx-auto max-w-3xl">
+       <audio ref={audioRef} />
       <div className="space-y-8">
         <header className="space-y-2">
           <h1 className="font-headline text-4xl font-bold tracking-tighter">
@@ -114,7 +148,7 @@ export default function ChatPage() {
                     </FormItem>
                   )}
                 />
-                <Button type="submit" disabled={isPending}>
+                <Button type="submit" disabled={isPending || isSpeaking}>
                   {isPending ? (
                     <Loader2 className="animate-spin" />
                   ) : (
@@ -157,9 +191,24 @@ export default function ChatPage() {
         {answer && (
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Sparkles className="text-primary" />
-                AI Answer
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="text-primary" />
+                  AI Answer
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => handleReadAloud(answer)}
+                  disabled={isPending}
+                >
+                  {isSpeaking ? (
+                    <Loader2 className="animate-spin" />
+                  ) : (
+                    <Volume2 />
+                  )}
+                  <span className="sr-only">Read aloud</span>
+                </Button>
               </CardTitle>
             </CardHeader>
             <CardContent>

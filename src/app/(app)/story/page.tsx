@@ -4,7 +4,7 @@ import { useState, useTransition, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { summarizeText } from '@/ai/flows/ai-summarizer-from-text';
+import { generateStory } from '@/ai/flows/story-generator';
 import { speakText } from '@/ai/flows/text-to-speech';
 import { Button } from '@/components/ui/button';
 import {
@@ -21,18 +21,18 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 import { Loader2, Sparkles, Volume2 } from 'lucide-react';
 
 const formSchema = z.object({
-  text: z.string().min(100, {
-    message: 'Text must be at least 100 characters to summarize.',
+  topic: z.string().min(2, {
+    message: 'Topic must be at least 2 characters.',
   }),
 });
 
-export default function SummarizerPage() {
+export default function StoryPage() {
   const [isPending, startTransition] = useTransition();
-  const [summary, setSummary] = useState<string | null>(null);
+  const [story, setStory] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -40,23 +40,23 @@ export default function SummarizerPage() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      text: '',
+      topic: '',
     },
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     startTransition(async () => {
-      setSummary(null);
+      setStory(null);
       setError(null);
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current.src = '';
       }
       try {
-        const result = await summarizeText(values);
-        setSummary(result.summary);
+        const result = await generateStory(values);
+        setStory(result.story);
       } catch (e: any) {
-        setError(e.message || 'An error occurred while summarizing. Please try again.');
+        setError(e.message || 'An error occurred. Please try again.');
         console.error(e);
       }
     });
@@ -94,17 +94,17 @@ export default function SummarizerPage() {
       <div className="space-y-8">
         <header className="space-y-2">
           <h1 className="font-headline text-4xl font-bold tracking-tighter">
-            AI Text Summarizer
+            AI Story Generator
           </h1>
           <p className="text-muted-foreground">
-            Paste in any long text, article, or document, and get a quick,
-            easy-to-read summary of the key points.
+            Unleash your imagination. Provide a topic, and our AI will weave a
+            unique story for you.
           </p>
         </header>
 
         <Card>
           <CardHeader>
-            <CardTitle>Summarize Your Text</CardTitle>
+            <CardTitle>Create a Story</CardTitle>
           </CardHeader>
           <CardContent>
             <Form {...form}>
@@ -114,14 +114,13 @@ export default function SummarizerPage() {
               >
                 <FormField
                   control={form.control}
-                  name="text"
+                  name="topic"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Text to Summarize</FormLabel>
+                      <FormLabel>Story Topic</FormLabel>
                       <FormControl>
-                        <Textarea
-                          placeholder="Paste your text here..."
-                          className="min-h-[250px] resize-y"
+                        <Input
+                          placeholder="e.g., A robot who discovers music"
                           {...field}
                         />
                       </FormControl>
@@ -135,7 +134,7 @@ export default function SummarizerPage() {
                   ) : (
                     <Sparkles className="mr-2" />
                   )}
-                  Summarize
+                  Generate Story
                 </Button>
               </form>
             </Form>
@@ -147,13 +146,14 @@ export default function SummarizerPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Sparkles className="text-primary" />
-                Generating Summary...
+                Generating Story...
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="h-4 w-full animate-pulse rounded-md bg-muted" />
               <div className="h-4 w-3/4 animate-pulse rounded-md bg-muted" />
               <div className="h-4 w-full animate-pulse rounded-md bg-muted" />
+              <div className="h-4 w-5/6 animate-pulse rounded-md bg-muted" />
             </CardContent>
           </Card>
         )}
@@ -169,18 +169,18 @@ export default function SummarizerPage() {
           </Card>
         )}
 
-        {summary && (
+        {story && (
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Sparkles className="text-primary" />
-                  Summary
+                  The Story
                 </div>
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => handleReadAloud(summary)}
+                  onClick={() => handleReadAloud(story)}
                   disabled={isPending}
                 >
                   {isSpeaking ? (
@@ -194,7 +194,7 @@ export default function SummarizerPage() {
             </CardHeader>
             <CardContent>
               <div className="prose prose-sm max-w-none text-foreground dark:prose-invert">
-                <p>{summary}</p>
+                <p>{story}</p>
               </div>
             </CardContent>
           </Card>

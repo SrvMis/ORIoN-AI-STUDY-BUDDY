@@ -7,6 +7,7 @@ import {
   ClipboardCheck,
   FileText,
   User,
+  BotMessageSquare,
 } from 'lucide-react';
 import {
   SidebarProvider,
@@ -26,6 +27,7 @@ const navItems = [
   { href: '/chat', icon: MessageSquare, label: 'AI Chat' },
   { href: '/quiz', icon: ClipboardCheck, label: 'Quiz Generator' },
   { href: '/summarizer', icon: FileText, label: 'Text Summarizer' },
+  { href: '/story', icon: BotMessageSquare, label: 'Story Generator' },
   { href: '/profile', icon: User, label: 'Profile' },
 ];
 
