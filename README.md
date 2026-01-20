@@ -80,7 +80,7 @@ To get this project up and running on your local machine, follow these steps.
     npm run dev
     ```
 
-The application will be available at [http://localhost:9002](http://localhost:9002).
+The application will be available at https://9000-firebase-studio-1768879607450.cluster-ikxjzjhlifcwuroomfkjrx437g.cloudworkstations.dev/chat?embedded=0&monospaceUid=663213
 
 ---
 
