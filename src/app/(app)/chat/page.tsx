@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { answerQuestion } from '@/ai/flows/ai-answer-questions';
-import { speakText } from '@/ai/flows/text-to-speech';
+import { textToSpeech } from '@/ai/flows/text-to-speech';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -79,10 +79,19 @@ export default function ChatPage() {
     setIsSpeaking(true);
     setError(null);
     try {
-      const { audio } = await speakText(text);
+      const { audio } = await textToSpeech(text);
       if (audioRef.current) {
         audioRef.current.src = audio;
-        audioRef.current.play();
+        const playPromise = audioRef.current.play();
+        if (playPromise !== undefined) {
+          playPromise.catch((e) => {
+            console.error('Audio playback failed:', e);
+            setError(
+              'Could not play audio. Your browser might be blocking it or the format is not supported.'
+            );
+            setIsSpeaking(false);
+          });
+        }
         audioRef.current.onended = () => {
           setIsSpeaking(false);
         };

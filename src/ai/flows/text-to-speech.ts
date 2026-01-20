@@ -48,7 +48,7 @@ async function toWav(
   });
 }
 
-export async function speakText(
+export async function textToSpeech(
   input: TextToSpeechInput
 ): Promise<TextToSpeechOutput> {
   return textToSpeechFlow(input);
