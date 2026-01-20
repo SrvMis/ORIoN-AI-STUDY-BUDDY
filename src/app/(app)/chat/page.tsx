@@ -11,7 +11,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
@@ -250,7 +249,63 @@ export default function ChatPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-8">
-            {isPending ? (
+            <Card>
+              <CardHeader>
+                <CardTitle>Ask a Question</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Form {...form}>
+                  <form
+                    onSubmit={form.handleSubmit(onSubmit)}
+                    className="space-y-6"
+                  >
+                    <FormField
+                      control={form.control}
+                      name="topic"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Topic</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="e.g., Photosynthesis"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="question"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Your Question</FormLabel>
+                          <FormControl>
+                            <Textarea
+                              placeholder="e.g., What are the main inputs and outputs of the Calvin Cycle?"
+                              className="min-h-[120px]"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <Button type="submit" disabled={isPending || isSpeaking}>
+                      {isPending ? (
+                        <Loader2 className="animate-spin" />
+                      ) : (
+                        <Sparkles className="mr-2" />
+                      )}
+                      Get Answer
+                    </Button>
+                  </form>
+                </Form>
+              </CardContent>
+            </Card>
+
+            {isPending && (
               <Card>
                 <CardHeader>
                   <CardTitle>Getting your answer...</CardTitle>
@@ -269,7 +324,20 @@ export default function ChatPage() {
                   </div>
                 </CardContent>
               </Card>
-            ) : latestAssistantMessage ? (
+            )}
+
+            {error && !isPending && (
+              <Card className="border-destructive">
+                <CardHeader>
+                  <CardTitle className="text-destructive">Error</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p>{error}</p>
+                </CardContent>
+              </Card>
+            )}
+
+            {latestAssistantMessage && !isPending && (
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
@@ -327,79 +395,6 @@ export default function ChatPage() {
                       <p>{latestAssistantMessage.content}</p>
                     </div>
                   </div>
-                </CardContent>
-                <CardFooter>
-                  <Button onClick={() => setLatestAssistantMessageId(null)}>
-                    <MessageSquare className="mr-2 h-4 w-4" />
-                    Ask Another Question
-                  </Button>
-                </CardFooter>
-              </Card>
-            ) : (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Ask a Question</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Form {...form}>
-                    <form
-                      onSubmit={form.handleSubmit(onSubmit)}
-                      className="space-y-6"
-                    >
-                      <FormField
-                        control={form.control}
-                        name="topic"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Topic</FormLabel>
-                            <FormControl>
-                              <Input
-                                placeholder="e.g., Photosynthesis"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="question"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Your Question</FormLabel>
-                            <FormControl>
-                              <Textarea
-                                placeholder="e.g., What are the main inputs and outputs of the Calvin Cycle?"
-                                className="min-h-[120px]"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <Button type="submit" disabled={isPending || isSpeaking}>
-                        {isPending ? (
-                          <Loader2 className="animate-spin" />
-                        ) : (
-                          <Sparkles className="mr-2" />
-                        )}
-                        Get Answer
-                      </Button>
-                    </form>
-                  </Form>
-                </CardContent>
-              </Card>
-            )}
-
-            {error && !isPending && (
-              <Card className="border-destructive">
-                <CardHeader>
-                  <CardTitle className="text-destructive">Error</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p>{error}</p>
                 </CardContent>
               </Card>
             )}
