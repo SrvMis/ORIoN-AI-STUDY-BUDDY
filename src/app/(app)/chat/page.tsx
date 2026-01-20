@@ -11,6 +11,7 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
@@ -58,6 +59,9 @@ type Message = {
 export default function ChatPage() {
   const [isPending, startTransition] = useTransition();
   const [messages, setMessages] = useState<Message[]>([]);
+  const [latestAssistantMessageId, setLatestAssistantMessageId] = useState<
+    number | null
+  >(null);
   const [error, setError] = useState<string | null>(null);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -73,6 +77,7 @@ export default function ChatPage() {
   function onSubmit(values: z.infer<typeof formSchema>) {
     startTransition(async () => {
       setError(null);
+      setLatestAssistantMessageId(null);
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current.src = '';
@@ -95,6 +100,7 @@ export default function ChatPage() {
           pinned: false,
         };
         setMessages((prev) => [...prev, assistantMessage]);
+        setLatestAssistantMessageId(assistantMessage.id);
       } catch (e: any) {
         setError(e.message || 'An error occurred. Please try again.');
         console.error(e);
@@ -141,6 +147,7 @@ export default function ChatPage() {
   const handleClearChat = () => {
     setMessages([]);
     setError(null);
+    setLatestAssistantMessageId(null);
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.src = '';
@@ -152,10 +159,13 @@ export default function ChatPage() {
       prev.map((msg) => (msg.id === id ? { ...msg, pinned: !msg.pinned } : msg))
     );
   };
-  
+
   const pinnedMessages = messages.filter((m) => m.pinned);
   const regularMessages = messages.filter((m) => !m.pinned);
-  
+  const latestAssistantMessage = messages.find(
+    (m) => m.id === latestAssistantMessageId
+  );
+
   const renderMessage = (message: Message) => (
     <div key={message.id} className="flex items-start gap-4">
       <Avatar className="h-8 w-8 border">
@@ -171,18 +181,14 @@ export default function ChatPage() {
         <CardHeader className="p-4">
           <div className="flex items-center justify-between">
             <p className="font-semibold">
-              {message.role === 'user'
-                ? 'You'
-                : 'AI Study Buddy'}
+              {message.role === 'user' ? 'You' : 'AI Study Buddy'}
             </p>
             <div className="flex items-center">
               {message.role === 'assistant' && (
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() =>
-                    handleReadAloud(message.content)
-                  }
+                  onClick={() => handleReadAloud(message.content)}
                   disabled={isPending || isSpeaking}
                   className="h-8 w-8"
                 >
@@ -191,9 +197,7 @@ export default function ChatPage() {
                   ) : (
                     <Volume2 />
                   )}
-                  <span className="sr-only">
-                    Read aloud
-                  </span>
+                  <span className="sr-only">Read aloud</span>
                 </Button>
               )}
               <Button
@@ -246,61 +250,148 @@ export default function ChatPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-8">
-            <Card>
-              <CardHeader>
-                <CardTitle>Ask a Question</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Form {...form}>
-                  <form
-                    onSubmit={form.handleSubmit(onSubmit)}
-                    className="space-y-6"
-                  >
-                    <FormField
-                      control={form.control}
-                      name="topic"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Topic</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="e.g., Photosynthesis"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="question"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Your Question</FormLabel>
-                          <FormControl>
-                            <Textarea
-                              placeholder="e.g., What are the main inputs and outputs of the Calvin Cycle?"
-                              className="min-h-[120px]"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <Button type="submit" disabled={isPending || isSpeaking}>
-                      {isPending ? (
-                        <Loader2 className="animate-spin" />
-                      ) : (
-                        <Sparkles className="mr-2" />
-                      )}
-                      Get Answer
-                    </Button>
-                  </form>
-                </Form>
-              </CardContent>
-            </Card>
+            {isPending ? (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Getting your answer...</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-start gap-4">
+                    <Avatar className="h-8 w-8 border">
+                      <AvatarFallback className="bg-transparent">
+                        <Sparkles className="text-primary" />
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 space-y-2">
+                      <div className="h-4 w-full animate-pulse rounded-md bg-muted" />
+                      <div className="h-4 w-3/4 animate-pulse rounded-md bg-muted" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : latestAssistantMessage ? (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-between">
+                    <span>Here's your answer</span>
+                    <div className="flex items-center">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() =>
+                          handleReadAloud(latestAssistantMessage.content)
+                        }
+                        disabled={isPending || isSpeaking}
+                        className="h-8 w-8"
+                      >
+                        {isSpeaking ? (
+                          <Loader2 className="animate-spin" />
+                        ) : (
+                          <Volume2 />
+                        )}
+                        <span className="sr-only">Read aloud</span>
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() =>
+                          handlePinMessage(latestAssistantMessage.id)
+                        }
+                        disabled={isPending}
+                        className="h-8 w-8"
+                      >
+                        <Pin
+                          className={cn(
+                            'h-4 w-4',
+                            latestAssistantMessage.pinned &&
+                              'fill-primary text-primary'
+                          )}
+                        />
+                        <span className="sr-only">
+                          {latestAssistantMessage.pinned
+                            ? 'Unpin message'
+                            : 'Pin message'}
+                        </span>
+                      </Button>
+                    </div>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-start gap-4">
+                    <Avatar className="h-8 w-8 border">
+                      <AvatarFallback className="bg-transparent">
+                        <Sparkles className="text-primary" />
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="prose prose-sm max-w-none flex-1 text-foreground dark:prose-invert">
+                      <p>{latestAssistantMessage.content}</p>
+                    </div>
+                  </div>
+                </CardContent>
+                <CardFooter>
+                  <Button onClick={() => setLatestAssistantMessageId(null)}>
+                    <MessageSquare className="mr-2 h-4 w-4" />
+                    Ask Another Question
+                  </Button>
+                </CardFooter>
+              </Card>
+            ) : (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Ask a Question</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Form {...form}>
+                    <form
+                      onSubmit={form.handleSubmit(onSubmit)}
+                      className="space-y-6"
+                    >
+                      <FormField
+                        control={form.control}
+                        name="topic"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Topic</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="e.g., Photosynthesis"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="question"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Your Question</FormLabel>
+                            <FormControl>
+                              <Textarea
+                                placeholder="e.g., What are the main inputs and outputs of the Calvin Cycle?"
+                                className="min-h-[120px]"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <Button type="submit" disabled={isPending || isSpeaking}>
+                        {isPending ? (
+                          <Loader2 className="animate-spin" />
+                        ) : (
+                          <Sparkles className="mr-2" />
+                        )}
+                        Get Answer
+                      </Button>
+                    </form>
+                  </Form>
+                </CardContent>
+              </Card>
+            )}
 
             {error && !isPending && (
               <Card className="border-destructive">
@@ -338,23 +429,23 @@ export default function ChatPage() {
                       {messages.length === 0 && !isPending && (
                         <div className="flex h-full flex-col items-center justify-center py-12 text-center text-muted-foreground">
                           <MessageSquare className="h-10 w-10 mb-4" />
-                          <p>
-                            Your conversation history will appear here.
-                          </p>
+                          <p>Your conversation history will appear here.</p>
                         </div>
                       )}
-                      
+
                       {pinnedMessages.length > 0 && (
                         <div className="space-y-6">
-                            <div className="flex items-center">
-                                <Pin className="h-4 w-4 mr-2 text-muted-foreground" />
-                                <h3 className="text-sm font-semibold text-muted-foreground">Pinned Messages</h3>
-                            </div>
-                            {pinnedMessages.map(renderMessage)}
-                            <Separator className="my-4" />
+                          <div className="flex items-center">
+                            <Pin className="h-4 w-4 mr-2 text-muted-foreground" />
+                            <h3 className="text-sm font-semibold text-muted-foreground">
+                              Pinned Messages
+                            </h3>
+                          </div>
+                          {pinnedMessages.map(renderMessage)}
+                          <Separator className="my-4" />
                         </div>
                       )}
-                      
+
                       <div className="space-y-6">
                         {regularMessages.map(renderMessage)}
                       </div>
