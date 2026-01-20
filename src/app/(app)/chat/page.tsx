@@ -23,8 +23,9 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Loader2, Sparkles, Volume2 } from 'lucide-react';
+import { Loader2, Sparkles, Volume2, User, Trash2 } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 const formSchema = z.object({
   topic: z.string().min(2, {
@@ -35,9 +36,15 @@ const formSchema = z.object({
   }),
 });
 
+type Message = {
+  role: 'user' | 'assistant';
+  content: string;
+  topic?: string;
+};
+
 export default function ChatPage() {
   const [isPending, startTransition] = useTransition();
-  const [answer, setAnswer] = useState<string | null>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -52,19 +59,30 @@ export default function ChatPage() {
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     startTransition(async () => {
-      setAnswer(null);
       setError(null);
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current.src = '';
       }
+      const userMessage: Message = {
+        role: 'user',
+        content: values.question,
+        topic: values.topic,
+      };
+      setMessages((prev) => [...prev, userMessage]);
+
       try {
         const result = await answerQuestion(values);
-        setAnswer(result.answer);
+        const assistantMessage: Message = {
+          role: 'assistant',
+          content: result.answer,
+        };
+        setMessages((prev) => [...prev, assistantMessage]);
       } catch (e: any) {
         setError(e.message || 'An error occurred. Please try again.');
         console.error(e);
       }
+      form.reset({ topic: values.topic, question: '' });
     });
   }
 
@@ -102,10 +120,19 @@ export default function ChatPage() {
       setIsSpeaking(false);
     }
   };
+  
+  const handleClearChat = () => {
+    setMessages([]);
+    setError(null);
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.src = '';
+    }
+  };
 
   return (
     <div className="container mx-auto max-w-3xl">
-       <audio ref={audioRef} />
+      <audio ref={audioRef} />
       <div className="space-y-8">
         <header className="space-y-2">
           <h1 className="font-headline text-4xl font-bold tracking-tighter">
@@ -157,73 +184,105 @@ export default function ChatPage() {
                     </FormItem>
                   )}
                 />
-                <Button type="submit" disabled={isPending || isSpeaking}>
-                  {isPending ? (
-                    <Loader2 className="animate-spin" />
-                  ) : (
-                    <Sparkles className="mr-2" />
+                <div className="flex items-center gap-4">
+                  <Button type="submit" disabled={isPending || isSpeaking}>
+                    {isPending ? (
+                      <Loader2 className="animate-spin" />
+                    ) : (
+                      <Sparkles className="mr-2" />
+                    )}
+                    Get Answer
+                  </Button>
+                  {messages.length > 0 && (
+                    <Button variant="outline" onClick={handleClearChat} type="button">
+                      <Trash2 className="mr-2" />
+                      Clear Chat
+                    </Button>
                   )}
-                  Get Answer
-                </Button>
+                </div>
               </form>
             </Form>
           </CardContent>
         </Card>
 
-        {isPending && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Sparkles className="text-primary" />
-                Generating Answer...
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="h-4 w-full animate-pulse rounded-md bg-muted" />
-              <div className="h-4 w-3/4 animate-pulse rounded-md bg-muted" />
-              <div className="h-4 w-full animate-pulse rounded-md bg-muted" />
-            </CardContent>
-          </Card>
+        {messages.length > 0 && (
+          <div className="space-y-6">
+            <h2 className="font-headline text-2xl font-bold">Chat History</h2>
+            {messages.map((message, index) => (
+              <div key={index} className="flex items-start gap-4">
+                <Avatar className="h-8 w-8 border">
+                  <AvatarFallback className="bg-transparent">
+                    {message.role === 'user' ? (
+                      <User />
+                    ) : (
+                      <Sparkles className="text-primary" />
+                    )}
+                  </AvatarFallback>
+                </Avatar>
+                <Card className="flex-1">
+                  <CardHeader className="p-4">
+                    <div className="flex items-center justify-between">
+                      <p className="font-semibold">
+                        {message.role === 'user' ? 'You' : 'AI Study Buddy'}
+                      </p>
+                      {message.role === 'assistant' && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleReadAloud(message.content)}
+                          disabled={isPending || isSpeaking}
+                          className="h-8 w-8"
+                        >
+                          {isSpeaking ? (
+                            <Loader2 className="animate-spin" />
+                          ) : (
+                            <Volume2 />
+                          )}
+                          <span className="sr-only">Read aloud</span>
+                        </Button>
+                      )}
+                    </div>
+                    {message.role === 'user' && message.topic && (
+                      <p className="text-sm text-muted-foreground">
+                        Topic: {message.topic}
+                      </p>
+                    )}
+                  </CardHeader>
+                  <CardContent className="p-4 pt-0">
+                    <div className="prose prose-sm max-w-none text-foreground dark:prose-invert">
+                      <p>{message.content}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            ))}
+            {isPending && (
+              <div className="flex items-start gap-4">
+                <Avatar className="h-8 w-8 border">
+                  <AvatarFallback className="bg-transparent">
+                    <Sparkles className="text-primary" />
+                  </AvatarFallback>
+                </Avatar>
+                <Card className="flex-1">
+                  <CardContent className="p-4">
+                    <div className="space-y-2">
+                      <div className="h-4 w-full animate-pulse rounded-md bg-muted" />
+                      <div className="h-4 w-3/4 animate-pulse rounded-md bg-muted" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+          </div>
         )}
 
-        {error && (
+        {error && !isPending && (
           <Card className="border-destructive">
             <CardHeader>
               <CardTitle className="text-destructive">Error</CardTitle>
             </CardHeader>
             <CardContent>
               <p>{error}</p>
-            </CardContent>
-          </Card>
-        )}
-
-        {answer && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Sparkles className="text-primary" />
-                  AI Answer
-                </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => handleReadAloud(answer)}
-                  disabled={isPending}
-                >
-                  {isSpeaking ? (
-                    <Loader2 className="animate-spin" />
-                  ) : (
-                    <Volume2 />
-                  )}
-                  <span className="sr-only">Read aloud</span>
-                </Button>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="prose prose-sm max-w-none text-foreground dark:prose-invert">
-                <p>{answer}</p>
-              </div>
             </CardContent>
           </Card>
         )}
