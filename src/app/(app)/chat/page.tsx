@@ -24,12 +24,9 @@ import {
 } from '@/components/ui/form';
 import {
   Loader2,
-  Sparkles,
   Volume2,
-  User,
   Copy,
   SendHorizonal,
-  Mic,
 } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -61,8 +58,6 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([WelcomeMessage]);
   const [error, setError] = useState<string | null>(null);
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [isListening, setIsListening] = useState(false);
-  const recognitionRef = useRef<any>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
@@ -135,65 +130,6 @@ export default function ChatPage() {
     },
     [form, startTransition]
   );
-
-  useEffect(() => {
-    const SpeechRecognition =
-      window.SpeechRecognition || (window as any).webkitSpeechRecognition;
-
-    if (!SpeechRecognition) {
-      return;
-    }
-
-    const recognition = new SpeechRecognition();
-    recognition.continuous = false;
-    recognition.interimResults = false;
-    recognition.lang = 'en-US';
-
-    recognition.onstart = () => {
-      setIsListening(true);
-    };
-
-    recognition.onresult = (event: any) => {
-      const transcript = event.results[0][0].transcript;
-      onSubmit({ query: transcript });
-    };
-
-    recognition.onerror = (event: any) => {
-      console.error('Speech recognition error:', event.error);
-      toast({
-        variant: 'destructive',
-        title: 'Voice Recognition Error',
-        description: `An error occurred: ${event.error}`,
-      });
-    };
-
-    recognition.onend = () => {
-      setIsListening(false);
-    };
-
-    recognitionRef.current = recognition;
-
-    return () => {
-      recognition?.stop();
-    };
-  }, [onSubmit, toast]);
-
-  const handleMicClick = () => {
-    if (!recognitionRef.current) {
-      toast({
-        variant: 'destructive',
-        title: 'Voice Recognition Not Supported',
-        description: 'Your browser does not support this feature.',
-      });
-      return;
-    }
-
-    if (isListening) {
-      recognitionRef.current.stop();
-    } else {
-      recognitionRef.current.start();
-    }
-  };
 
   const handleReadAloud = async (text: string) => {
     if (isSpeaking) {
@@ -328,7 +264,7 @@ export default function ChatPage() {
             <form onSubmit={form.handleSubmit(onSubmit)} className="relative">
               <Textarea
                 placeholder={t('Type a topic or concept...')}
-                className="min-h-12 resize-none rounded-full py-3 pl-12 pr-28"
+                className="min-h-12 resize-none rounded-full py-3 pl-4 pr-14"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
@@ -337,21 +273,6 @@ export default function ChatPage() {
                 }}
                 {...form.register('query')}
               />
-              <div className="absolute left-3 top-1/2 -translate-y-1/2">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  type="button"
-                  onClick={handleMicClick}
-                  disabled={isPending}
-                >
-                  {isListening ? (
-                    <Loader2 className="h-5 w-5 animate-spin text-primary" />
-                  ) : (
-                    <Mic className="h-5 w-5" />
-                  )}
-                </Button>
-              </div>
               <div className="absolute right-3 top-1/2 -translate-y-1/2">
                 <Button type="submit" size="icon" disabled={isPending}>
                   {isPending ? (
