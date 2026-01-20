@@ -23,6 +23,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Loader2, Sparkles, Volume2 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 const formSchema = z.object({
   topic: z.string().min(2, {
@@ -33,9 +34,9 @@ const formSchema = z.object({
 export default function StoryPage() {
   const [isPending, startTransition] = useTransition();
   const [story, setStory] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const { toast } = useToast();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -47,7 +48,6 @@ export default function StoryPage() {
   function onSubmit(values: z.infer<typeof formSchema>) {
     startTransition(async () => {
       setStory(null);
-      setError(null);
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current.src = '';
@@ -56,7 +56,11 @@ export default function StoryPage() {
         const result = await generateStory(values);
         setStory(result.story);
       } catch (e: any) {
-        setError(e.message || 'An error occurred. Please try again.');
+        toast({
+          variant: 'destructive',
+          title: 'Story Generation Error',
+          description: e.message || 'An error occurred. Please try again.',
+        });
         console.error(e);
       }
     });
@@ -71,7 +75,6 @@ export default function StoryPage() {
       return;
     }
     setIsSpeaking(true);
-    setError(null);
     try {
       const { audio } = await textToSpeech(text);
       if (audioRef.current) {
@@ -80,9 +83,12 @@ export default function StoryPage() {
         if (playPromise !== undefined) {
           playPromise.catch((e) => {
             console.error('Audio playback failed:', e);
-            setError(
-              'Could not play audio. Your browser might be blocking it or the format is not supported.'
-            );
+            toast({
+              variant: 'destructive',
+              title: 'Audio Error',
+              description:
+                'Could not play audio. Your browser might be blocking it.',
+            });
             setIsSpeaking(false);
           });
         }
@@ -91,7 +97,11 @@ export default function StoryPage() {
         };
       }
     } catch (e: any) {
-      setError(e.message || 'An error occurred during text-to-speech.');
+      toast({
+        variant: 'destructive',
+        title: 'Text-to-Speech Error',
+        description: e.message || 'An error occurred during text-to-speech.',
+      });
       console.error(e);
       setIsSpeaking(false);
     }
@@ -163,17 +173,6 @@ export default function StoryPage() {
               <div className="h-4 w-3/4 animate-pulse rounded-md bg-muted" />
               <div className="h-4 w-full animate-pulse rounded-md bg-muted" />
               <div className="h-4 w-5/6 animate-pulse rounded-md bg-muted" />
-            </CardContent>
-          </Card>
-        )}
-
-        {error && (
-          <Card className="border-destructive">
-            <CardHeader>
-              <CardTitle className="text-destructive">Error</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p>{error}</p>
             </CardContent>
           </Card>
         )}
