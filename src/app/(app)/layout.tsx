@@ -42,7 +42,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <aside className="flex h-screen w-72 flex-col gap-8 border-r bg-secondary/50 p-4">
         <header className="flex items-center gap-2">
           <Logo />
-          <Badge variant="outline">v1.0 Blueprint</Badge>
         </header>
 
         <div className="space-y-4">
