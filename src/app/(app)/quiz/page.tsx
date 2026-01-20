@@ -33,6 +33,7 @@ import {
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Loader2, Sparkles, Trophy, RotateCcw } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
+import { Label } from '@/components/ui/label';
 
 type Quiz = GenerateQuizOutput['quiz'];
 
@@ -142,20 +143,18 @@ export default function QuizPage() {
                   className="space-y-4"
                 >
                   {currentQuestion.options.map((option, i) => (
-                    <FormItem
+                    <div
                       key={i}
                       className="flex items-center space-x-3 space-y-0"
                     >
-                      <FormControl>
-                        <RadioGroupItem value={option} id={`option-${i}`} />
-                      </FormControl>
-                      <FormLabel
+                      <RadioGroupItem value={option} id={`option-${i}`} />
+                      <Label
                         htmlFor={`option-${i}`}
                         className="font-normal text-base"
                       >
                         {option}
-                      </FormLabel>
-                    </FormItem>
+                      </Label>
+                    </div>
                   ))}
                 </RadioGroup>
               </CardContent>
