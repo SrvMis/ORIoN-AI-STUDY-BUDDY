@@ -33,13 +33,6 @@ const tabNavItems = [
   { href: '/tech-specs', label: 'Tech Specs' },
 ];
 
-const examplePrompts = [
-  'Photosynthesis',
-  'Gravity',
-  'Python Loop',
-  'French Revolution',
-];
-
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
@@ -83,7 +76,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </nav>
         </div>
 
-        <div className="space-y-4">
+        <div className="mt-auto space-y-4">
           <h2 className="px-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Configuration
           </h2>
@@ -91,15 +84,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <span className="text-sm font-medium">Dark Mode</span>
             <ThemeToggle />
           </div>
-        </div>
-
-        <div className="mt-auto space-y-4 rounded-lg border bg-card p-3">
-          <h3 className="text-sm font-semibold">Try asking about:</h3>
-          <ul className="list-disc space-y-2 pl-4 text-sm text-muted-foreground">
-            {examplePrompts.map((prompt) => (
-              <li key={prompt}>&quot;{prompt}&quot;</li>
-            ))}
-          </ul>
         </div>
       </aside>
 
