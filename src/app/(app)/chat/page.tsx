@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition, useRef, useEffect } from 'react';
+import { useState, useTransition, useRef, useEffect, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -61,6 +61,8 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([WelcomeMessage]);
   const [error, setError] = useState<string | null>(null);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const recognitionRef = useRef<any>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
@@ -81,55 +83,117 @@ export default function ChatPage() {
     }
   }, [messages]);
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    startTransition(async () => {
-      setError(null);
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.src = '';
-      }
-      const userMessage: Message = {
-        id: Date.now(),
-        role: 'user',
-        content: values.query,
-      };
-      setMessages((prev) => [...prev, userMessage]);
+  const onSubmit = useCallback(
+    (values: z.infer<typeof formSchema>) => {
+      startTransition(async () => {
+        setError(null);
+        if (audioRef.current) {
+          audioRef.current.pause();
+          audioRef.current.src = '';
+        }
+        const userMessage: Message = {
+          id: Date.now(),
+          role: 'user',
+          content: values.query,
+        };
+        setMessages((prev) => [...prev, userMessage]);
 
-      const loadingMessage: Message = {
-        id: Date.now() + 1,
-        role: 'assistant',
-        content: '...', // Placeholder for loading
-      };
-      setMessages((prev) => [...prev, loadingMessage]);
-
-      try {
-        const result = await answerQuestion({
-          topic: values.query, // Using query for both
-          question: values.query,
-        });
-        const assistantMessage: Message = {
+        const loadingMessage: Message = {
           id: Date.now() + 1,
           role: 'assistant',
-          content: result.answer,
+          content: '...', // Placeholder for loading
         };
-        setMessages((prev) =>
-          prev.map((m) => (m.id === loadingMessage.id ? assistantMessage : m))
-        );
-      } catch (e: any) {
-        const errorMessage: Message = {
-          id: Date.now() + 1,
-          role: 'assistant',
-          content: e.message || 'An error occurred. Please try again.',
-          isError: true,
-        };
-        setMessages((prev) =>
-          prev.map((m) => (m.id === loadingMessage.id ? errorMessage : m))
-        );
-        console.error(e);
-      }
-      form.reset({ query: '' });
-    });
-  }
+        setMessages((prev) => [...prev, loadingMessage]);
+
+        try {
+          const result = await answerQuestion({
+            topic: values.query, // Using query for both
+            question: values.query,
+          });
+          const assistantMessage: Message = {
+            id: loadingMessage.id,
+            role: 'assistant',
+            content: result.answer,
+          };
+          setMessages((prev) =>
+            prev.map((m) => (m.id === loadingMessage.id ? assistantMessage : m))
+          );
+        } catch (e: any) {
+          const errorMessage: Message = {
+            id: loadingMessage.id,
+            role: 'assistant',
+            content: e.message || 'An error occurred. Please try again.',
+            isError: true,
+          };
+          setMessages((prev) =>
+            prev.map((m) => (m.id === loadingMessage.id ? errorMessage : m))
+          );
+          console.error(e);
+        }
+        form.reset({ query: '' });
+      });
+    },
+    [form, startTransition]
+  );
+
+  useEffect(() => {
+    const SpeechRecognition =
+      window.SpeechRecognition || (window as any).webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = 'en-US';
+
+    recognition.onstart = () => {
+      setIsListening(true);
+    };
+
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript;
+      onSubmit({ query: transcript });
+    };
+
+    recognition.onerror = (event: any) => {
+      console.error('Speech recognition error:', event.error);
+      toast({
+        variant: 'destructive',
+        title: 'Voice Recognition Error',
+        description: `An error occurred: ${event.error}`,
+      });
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+
+    recognitionRef.current = recognition;
+
+    return () => {
+      recognition?.stop();
+    };
+  }, [onSubmit, toast]);
+
+  const handleMicClick = () => {
+    if (!recognitionRef.current) {
+      toast({
+        variant: 'destructive',
+        title: 'Voice Recognition Not Supported',
+        description: 'Your browser does not support this feature.',
+      });
+      return;
+    }
+
+    if (isListening) {
+      recognitionRef.current.stop();
+    } else {
+      recognitionRef.current.start();
+    }
+  };
 
   const handleReadAloud = async (text: string) => {
     if (isSpeaking) {
@@ -274,8 +338,18 @@ export default function ChatPage() {
                 {...form.register('query')}
               />
               <div className="absolute left-3 top-1/2 -translate-y-1/2">
-                <Button variant="ghost" size="icon" type="button" disabled>
-                  <Mic />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  type="button"
+                  onClick={handleMicClick}
+                  disabled={isPending}
+                >
+                  {isListening ? (
+                    <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                  ) : (
+                    <Mic className="h-5 w-5" />
+                  )}
                 </Button>
               </div>
               <div className="absolute right-3 top-1/2 -translate-y-1/2">
