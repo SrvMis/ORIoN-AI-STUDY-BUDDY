@@ -1,37 +1,109 @@
-Title: ORIoN : AI STUDY BUDDY
-Subtitle: Your Personal AI-Powered Learning Companion
-Presenter Name: SrvMis
-(Suggestion): Add the app logo to this slide.
-Title: The Challenges of Modern Learning
-Content:
-Students often struggle to understand complex topics from static materials alone.
-Finding high-quality, relevant practice questions is difficult and time-consuming.
-Reviewing lengthy documents and articles for key information is inefficient.
-Title: Introducing ORIoN: A Smarter Way to Learn
-Content:
-ORIoN is an AI-powered web application that acts as a personal study partner.
-It uses advanced generative AI to make learning interactive, efficient, and tailored to the user's needs.
-Title: What ORIoN Can Do
-Content:
-Explain Topics: Get instant, clear explanations for any concept or question.
-Generate Quizzes: Create custom practice quizzes on any subject to test your knowledge.
-Summarize Text: Condense long articles or notes into easy-to-read summaries.
-Create Stories: Foster creativity by generating unique stories about any topic.
-Read Aloud: Listen to generated content with integrated text-to-speech functionality.
-Title: How It's Built
-Content:
-Frontend: Next.js & React
-AI Engine: Google's Genkit & Gemini Models
-UI/Styling: Tailwind CSS & ShadCN UI
-Hosting: Firebase App Hosting
-Title: How It Works
-Content: (You can take a screenshot of the "System Architecture" page from the app and place it on this slide)
-The user makes a request in the React UI.
-The request is sent to a Genkit AI Flow on the server.
-Genkit orchestrates the request and calls the Google Gemini API.
-The AI model processes the information and generates a response.
-The response is sent back and displayed to the user.
-Title: Thank You
-Content:
-Q&A
-GitHub Repository: `https://github.com/SrvMis/ORIoN-AI-STUDY-BUDDY
+# ORIoN : AI STUDY BUDDY
+
+<div align="center">
+  <img src="https://placehold.co/600x300/22252a/e0e0e0?text=ORIoN" alt="ORIoN App Banner">
+</div>
+
+<div align="center">
+
+**An AI-powered learning companion designed to make studying more interactive, efficient, and personalized. Built with Next.js, Genkit, and Google's Gemini model.**
+
+
+https://9000-firebase-studio-1768879607450.cluster-ikxjzjhlifcwuroomfkjrx437g.cloudworkstations.dev/chat?embedded=0&monospaceUid=663213
+---
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Next.js](https://img.shields.io/badge/Next.js-15-black?logo=next.js)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-19-blue?logo=react)](https://reactjs.org/)
+[![Firebase](https://img.shields.io/badge/Firebase-orange?logo=firebase)](https://firebase.google.com/)
+[![Genkit](https://img.shields.io/badge/Genkit-blue?logo=google&logoColor=white)](https://firebase.google.com/docs/genkit)
+
+</div>
+
+## ✨ Key Features
+
+- **🧠 Explain Topic:** Get clear, concise, and instant explanations on any complex subject.
+- **📝 Generate Quiz:** Create custom multiple-choice quizzes to test your knowledge and prepare for exams.
+- **📖 Summarize Text:** Paste in long articles, lecture notes, or documents and receive a quick, easy-to-read summary.
+- **✍️ Create a Story:** Spark your imagination by generating unique, creative stories based on any topic.
+- **🔊 Read Aloud:** Listen to generated answers and stories with integrated Text-to-Speech (TTS).
+- **🌐 Multi-Language Support:** A fully localized interface supporting multiple languages.
+
+---
+
+## 🛠️ Technology Stack
+
+ORIoN is built with a modern, robust, and scalable tech stack:
+
+- **Framework:** [Next.js](https://nextjs.org/) (v15) with React (v19)
+- **AI Orchestration:** [Genkit (Google)](https://firebase.google.com/docs/genkit)
+- **AI Model:** [Google Gemini 2.5 Flash](https://deepmind.google.com/technologies/gemini/)
+- **UI Components:** [ShadCN UI](https://ui.shadcn.com/)
+- **Styling:** [Tailwind CSS](https://tailwindcss.com/)
+- **Deployment:** [Firebase App Hosting](https://firebase.google.com/docs/app-hosting)
+- **Schema Validation:** [Zod](https://zod.dev/)
+
+---
+
+## 🚀 Getting Started
+
+To get this project up and running on your local machine, follow these steps.
+
+### Prerequisites
+
+- Node.js (v18 or later)
+- An `npm` package manager
+- A Google Gemini API Key
+
+### Installation & Setup
+
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/SrvMis/ORIoN-AI-STUDY-BUDDY.git
+    cd ORIoN-AI-STUDY-BUDDY
+    ```
+
+2.  **Install dependencies:**
+    ```bash
+    npm install
+    ```
+
+3.  **Set up your environment variables:**
+    Create a file named `.env` in the root of the project and add your Gemini API key:
+    ```env
+    GEMINI_API_KEY="your_api_key_here"
+    ```
+    You can generate a free Gemini API key from [Google AI Studio](https://makersuite.google.com/app/apikey).
+
+4.  **Run the development server:**
+    ```bash
+    npm run dev
+    ```
+
+The application will be available at [http://localhost:9002](http://localhost:9002).
+
+---
+
+## 🏗️ System Architecture
+
+The application follows a simple yet powerful client-server architecture:
+
+1.  **Client (Next.js/React):** The user interacts with the application through the web interface built with React components.
+2.  **Server (Genkit Flows):** User requests (like asking a question or requesting a quiz) are handled by Genkit flows running as server-side functions.
+3.  **Orchestration (Genkit):** Genkit receives the request, constructs a detailed prompt with the appropriate context and output schema, and sends it to the Gemini API.
+4.  **AI Processing (Gemini):** Google's Gemini model processes the prompt and generates the required content (text, JSON for a quiz, etc.).
+5.  **Response:** The generated content is returned to the client and displayed to the user in a structured format.
+
+*(This architecture is also visualized on the "System Architecture" page within the live application.)*
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License. See the `LICENSE` file for more details.
+
+---
+
+<div align="center">
+Made with ❤️ by SrvMis
+</div>
