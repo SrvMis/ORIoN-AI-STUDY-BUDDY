@@ -109,7 +109,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           <Tabs value={pathname} className="w-full">
             <TabsList>
               {tabNavItems.map((item) => (
-                <Link key={item.href} href={item.href} legacyBehavior passHref>
+                <Link key={item.href} href={item.href}>
                   <TabsTrigger value={item.href}>{item.label}</TabsTrigger>
                 </Link>
               ))}
