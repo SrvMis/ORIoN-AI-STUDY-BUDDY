@@ -147,9 +147,9 @@ const translations: Record<string, Partial<TranslationMessages>> = {
     'Summarize Your Text': 'Summarize Your Text',
     'Text to Summarize': 'Text to Summarize',
     'Text must be at least 100 characters to summarize.': 'Text must be at least 100 characters to summarize.',
-    'Paste your text here...': 'Paste your text here...',
+    'Paste your text here...': 'Pega tu texto aquí...',
     'Summarize': 'Summarize',
-    'Generating Summary...': 'Generating Summary...',
+    'Generating Summary...': 'Generating summary...',
     'Summary': 'Summary',
   },
   Spanish: {

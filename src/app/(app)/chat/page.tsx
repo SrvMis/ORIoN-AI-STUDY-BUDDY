@@ -8,21 +8,6 @@ import { answerQuestion } from '@/ai/flows/ai-answer-questions';
 import { textToSpeech } from '@/ai/flows/text-to-speech';
 import { Button } from '@/components/ui/button';
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import {
   Loader2,
   Volume2,
   Copy,
@@ -260,30 +245,28 @@ export default function ChatPage() {
       </ScrollArea>
       <div className="border-t bg-card/50 p-4">
         <div className="container mx-auto max-w-4xl">
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="relative">
-              <Textarea
-                placeholder={t('Type a topic or concept...')}
-                className="min-h-12 resize-none rounded-full py-3 pl-4 pr-14"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    form.handleSubmit(onSubmit)();
-                  }
-                }}
-                {...form.register('query')}
-              />
-              <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                <Button type="submit" size="icon" disabled={isPending}>
-                  {isPending ? (
-                    <Loader2 className="animate-spin" />
-                  ) : (
-                    <SendHorizonal />
-                  )}
-                </Button>
-              </div>
-            </form>
-          </Form>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="relative">
+            <Textarea
+              placeholder={t('Type a topic or concept...')}
+              className="min-h-12 resize-none rounded-full py-3 pl-4 pr-14"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  form.handleSubmit(onSubmit)();
+                }
+              }}
+              {...form.register('query')}
+            />
+            <div className="absolute right-3 top-1/2 -translate-y-1/2">
+              <Button type="submit" size="icon" disabled={isPending}>
+                {isPending ? (
+                  <Loader2 className="animate-spin" />
+                ) : (
+                  <SendHorizonal />
+                )}
+              </Button>
+            </div>
+          </form>
           <p className="mt-2 text-center text-xs text-muted-foreground">
             {t('AI can make mistakes. Always verify important information.')}
           </p>
