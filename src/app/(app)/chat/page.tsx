@@ -30,10 +30,13 @@ import {
   User,
   Trash2,
   MessageSquare,
+  Pin,
 } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { cn } from '@/lib/utils';
+import { Separator } from '@/components/ui/separator';
 
 const formSchema = z.object({
   topic: z.string().min(2, {
@@ -45,9 +48,11 @@ const formSchema = z.object({
 });
 
 type Message = {
+  id: number;
   role: 'user' | 'assistant';
   content: string;
   topic?: string;
+  pinned: boolean;
 };
 
 export default function ChatPage() {
@@ -73,17 +78,21 @@ export default function ChatPage() {
         audioRef.current.src = '';
       }
       const userMessage: Message = {
+        id: Date.now(),
         role: 'user',
         content: values.question,
         topic: values.topic,
+        pinned: false,
       };
       setMessages((prev) => [...prev, userMessage]);
 
       try {
         const result = await answerQuestion(values);
         const assistantMessage: Message = {
+          id: Date.now() + 1,
           role: 'assistant',
           content: result.answer,
+          pinned: false,
         };
         setMessages((prev) => [...prev, assistantMessage]);
       } catch (e: any) {
@@ -137,6 +146,89 @@ export default function ChatPage() {
       audioRef.current.src = '';
     }
   };
+
+  const handlePinMessage = (id: number) => {
+    setMessages((prev) =>
+      prev.map((msg) => (msg.id === id ? { ...msg, pinned: !msg.pinned } : msg))
+    );
+  };
+  
+  const pinnedMessages = messages.filter((m) => m.pinned);
+  const regularMessages = messages.filter((m) => !m.pinned);
+  
+  const renderMessage = (message: Message) => (
+    <div key={message.id} className="flex items-start gap-4">
+      <Avatar className="h-8 w-8 border">
+        <AvatarFallback className="bg-transparent">
+          {message.role === 'user' ? (
+            <User />
+          ) : (
+            <Sparkles className="text-primary" />
+          )}
+        </AvatarFallback>
+      </Avatar>
+      <Card className="flex-1">
+        <CardHeader className="p-4">
+          <div className="flex items-center justify-between">
+            <p className="font-semibold">
+              {message.role === 'user'
+                ? 'You'
+                : 'AI Study Buddy'}
+            </p>
+            <div className="flex items-center">
+              {message.role === 'assistant' && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() =>
+                    handleReadAloud(message.content)
+                  }
+                  disabled={isPending || isSpeaking}
+                  className="h-8 w-8"
+                >
+                  {isSpeaking ? (
+                    <Loader2 className="animate-spin" />
+                  ) : (
+                    <Volume2 />
+                  )}
+                  <span className="sr-only">
+                    Read aloud
+                  </span>
+                </Button>
+              )}
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => handlePinMessage(message.id)}
+                disabled={isPending}
+                className="h-8 w-8"
+              >
+                <Pin
+                  className={cn(
+                    'h-4 w-4',
+                    message.pinned && 'fill-primary text-primary'
+                  )}
+                />
+                <span className="sr-only">
+                  {message.pinned ? 'Unpin message' : 'Pin message'}
+                </span>
+              </Button>
+            </div>
+          </div>
+          {message.role === 'user' && message.topic && (
+            <p className="text-sm text-muted-foreground">
+              Topic: {message.topic}
+            </p>
+          )}
+        </CardHeader>
+        <CardContent className="p-4 pt-0">
+          <div className="prose prose-sm max-w-none text-foreground dark:prose-invert">
+            <p>{message.content}</p>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
 
   return (
     <div className="container mx-auto max-w-7xl">
@@ -251,60 +343,22 @@ export default function ChatPage() {
                           </p>
                         </div>
                       )}
-                      {messages.map((message, index) => (
-                        <div key={index} className="flex items-start gap-4">
-                          <Avatar className="h-8 w-8 border">
-                            <AvatarFallback className="bg-transparent">
-                              {message.role === 'user' ? (
-                                <User />
-                              ) : (
-                                <Sparkles className="text-primary" />
-                              )}
-                            </AvatarFallback>
-                          </Avatar>
-                          <Card className="flex-1">
-                            <CardHeader className="p-4">
-                              <div className="flex items-center justify-between">
-                                <p className="font-semibold">
-                                  {message.role === 'user'
-                                    ? 'You'
-                                    : 'AI Study Buddy'}
-                                </p>
-                                {message.role === 'assistant' && (
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={() =>
-                                      handleReadAloud(message.content)
-                                    }
-                                    disabled={isPending || isSpeaking}
-                                    className="h-8 w-8"
-                                  >
-                                    {isSpeaking ? (
-                                      <Loader2 className="animate-spin" />
-                                    ) : (
-                                      <Volume2 />
-                                    )}
-                                    <span className="sr-only">
-                                      Read aloud
-                                    </span>
-                                  </Button>
-                                )}
-                              </div>
-                              {message.role === 'user' && message.topic && (
-                                <p className="text-sm text-muted-foreground">
-                                  Topic: {message.topic}
-                                </p>
-                              )}
-                            </CardHeader>
-                            <CardContent className="p-4 pt-0">
-                              <div className="prose prose-sm max-w-none text-foreground dark:prose-invert">
-                                <p>{message.content}</p>
-                              </div>
-                            </CardContent>
-                          </Card>
+                      
+                      {pinnedMessages.length > 0 && (
+                        <div className="space-y-6">
+                            <div className="flex items-center">
+                                <Pin className="h-4 w-4 mr-2 text-muted-foreground" />
+                                <h3 className="text-sm font-semibold text-muted-foreground">Pinned Messages</h3>
+                            </div>
+                            {pinnedMessages.map(renderMessage)}
+                            <Separator className="my-4" />
                         </div>
-                      ))}
+                      )}
+                      
+                      <div className="space-y-6">
+                        {regularMessages.map(renderMessage)}
+                      </div>
+
                       {isPending && (
                         <div className="flex items-start gap-4">
                           <Avatar className="h-8 w-8 border">
