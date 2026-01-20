@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   GraduationCap,
   FileText,
@@ -34,6 +34,11 @@ function SidebarContent() {
   const pathname = usePathname();
   const { language, setLanguage } = useLanguage();
   const { t } = useTranslation();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const sidebarNavItems = [
     { href: '/chat', icon: GraduationCap, label: t('Explain Topic') },
@@ -92,21 +97,23 @@ function SidebarContent() {
             <span className="text-sm font-medium">{t('Language')}</span>
             <Languages className="h-5 w-5 text-muted-foreground" />
           </div>
-          <Select
-            onValueChange={(value) => setLanguage(value as any)}
-            defaultValue={language}
-          >
-            <SelectTrigger className="mt-2 w-full">
-              <SelectValue placeholder={t('Select language')} />
-            </SelectTrigger>
-            <SelectContent>
-              {availableLanguages.map((lang) => (
-                <SelectItem key={lang} value={lang}>
-                  {lang}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {mounted && (
+            <Select
+              onValueChange={(value) => setLanguage(value as any)}
+              defaultValue={language}
+            >
+              <SelectTrigger className="mt-2 w-full">
+                <SelectValue placeholder={t('Select language')} />
+              </SelectTrigger>
+              <SelectContent>
+                {availableLanguages.map((lang) => (
+                  <SelectItem key={lang} value={lang}>
+                    {lang}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
         </div>
       </div>
     </>
@@ -116,6 +123,11 @@ function SidebarContent() {
 function LayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { t } = useTranslation();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const activeTab = ['/chat', '/quiz', '/summarizer', '/story'].includes(pathname)
     ? '/chat'
@@ -137,15 +149,17 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
         {/* Main Content */}
         <div className="flex flex-1 flex-col">
           <header className="border-b bg-card px-6 py-2">
-            <Tabs value={activeTab} className="w-full">
-              <TabsList>
-                {tabNavItems.map((item) => (
-                  <Link key={item.href} href={item.href}>
-                    <TabsTrigger value={item.href}>{item.label}</TabsTrigger>
-                  </Link>
-                ))}
-              </TabsList>
-            </Tabs>
+            {mounted && (
+              <Tabs value={activeTab} className="w-full">
+                <TabsList>
+                  {tabNavItems.map((item) => (
+                    <Link key={item.href} href={item.href}>
+                      <TabsTrigger value={item.href}>{item.label}</TabsTrigger>
+                    </Link>
+                  ))}
+                </TabsList>
+              </Tabs>
+            )}
           </header>
           <main className="flex-1 overflow-y-auto p-6">{children}</main>
         </div>
