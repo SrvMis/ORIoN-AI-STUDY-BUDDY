@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
-type Language = 'English' | 'Spanish' | 'French' | 'German' | 'Japanese';
+type Language = 'English' | 'Spanish' | 'French' | 'German' | 'Japanese' | 'Hindi' | 'Odia' | 'Tamil' | 'Telugu';
 
 type LanguageContextType = {
   language: Language;
@@ -29,4 +29,14 @@ export function useLanguage() {
   return context;
 }
 
-export const availableLanguages: Language[] = ['English', 'Spanish', 'French', 'German', 'Japanese'];
+export const availableLanguages: Language[] = [
+  'English',
+  'Spanish',
+  'French',
+  'German',
+  'Japanese',
+  'Hindi',
+  'Odia',
+  'Tamil',
+  'Telugu',
+];
