@@ -86,142 +86,294 @@ export default function SystemArchitecturePage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Diagram</CardTitle>
+            <CardTitle>System Architecture Blueprint</CardTitle>
             <CardDescription>
-              A high-level look at the data and request flow.
+              Data flow and component interaction diagram
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-2">
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 800 400"
-              className="h-auto w-full max-w-full rounded-lg border bg-background"
+              viewBox="0 0 900 650"
+              className="h-auto w-full max-w-full rounded-lg bg-background"
             >
               <style>{`
-                .text {
-                  font-family: 'Space Grotesk', sans-serif;
-                  fill: hsl(var(--foreground));
-                  font-weight: 500;
-                }
-                .text-sm {
-                  font-size: 12px;
-                  fill: hsl(var(--muted-foreground));
-                }
-                .box {
-                  stroke: hsl(var(--border));
-                  stroke-width: 1.5;
-                  fill: url(#box-gradient);
-                }
-                .arrow-text {
-                  font-family: 'Inter', sans-serif;
-                  fill: hsl(var(--accent));
-                  font-size: 13px;
-                  font-weight: 500;
-                }
-                #arrowhead path {
-                  fill: hsl(var(--primary));
-                }
-                .icon {
-                  fill: hsl(var(--primary));
-                }
-                .grid-line {
-                  stroke: hsl(var(--border) / 0.5);
-                  stroke-width: 0.5;
-                }
-                @keyframes dash {
-                  to {
-                    stroke-dashoffset: 20;
-                  }
-                }
-                .animated-arrow {
-                  stroke: hsl(var(--primary));
-                  stroke-width: 2.5;
-                  marker-end: url(#arrowhead);
-                  stroke-dasharray: 10;
-                  animation: dash 1s linear infinite;
-                }
+                .line { stroke: hsl(var(--border)); stroke-width: 1.5; fill: none; }
+                .box-label { font-size: 10px; font-weight: bold; fill: white; text-anchor: middle; }
+                .box-title { font-size: 16px; font-weight: bold; text-anchor: middle; }
+                .box-desc { font-size: 12px; text-anchor: middle; }
+                
+                .font-body { font-family: 'Inter', sans-serif; }
+                .font-headline { font-family: 'Space Grotesk', sans-serif; }
+    
+                .pill-frontend { fill: #6366F1; }
+                .box-frontend { fill: hsl(var(--muted)); stroke: #A5B4FC; }
+                .text-frontend { fill: hsl(var(--foreground)); }
+    
+                .pill-security { fill: #F97316; }
+                .box-security { fill: hsl(var(--muted)); stroke: #FDBA74; }
+                .text-security { fill: hsl(var(--foreground)); }
+                
+                .pill-orchestration { fill: #475569; }
+                .box-orchestration { fill: #1E293B; stroke: #334155; }
+                .text-orchestration { fill: #F8FAFC; }
+    
+                .pill-storage { fill: #10B981; }
+                .box-storage { fill: hsl(var(--muted)); stroke: #6EE7B7; }
+                .text-storage { fill: hsl(var(--foreground)); }
+    
+                .pill-history { fill: #0EA5E9; }
+                .box-history { fill: hsl(var(--muted)); stroke: #7DD3FC; }
+                .text-history { fill: hsl(var(--foreground)); }
+                
+                .pill-api { fill: #A855F7; }
+                .box-api { fill: #7C3AED; stroke: #A855F7; }
+                .text-api-title { fill: #F8FAFC; }
+                .text-api-desc { fill: #E0E7FF; }
               `}</style>
-              <defs>
-                <pattern
-                  id="grid"
-                  width="40"
-                  height="40"
-                  patternUnits="userSpaceOnUse"
+
+              <rect
+                x="5"
+                y="5"
+                width="890"
+                height="640"
+                rx="20"
+                fill="hsl(var(--card))"
+              />
+
+              {/* Lines */}
+              <path className="line" d="M450 160 V 210" />
+              <path className="line" d="M300 295 H 350" />
+              <path className="line" d="M550 295 H 640" />
+              <path className="line" d="M450 320 V 470" />
+              <path className="line" d="M240 295 H 300" />
+              <path className="line" d="M640 295 H 660" />
+              <path className="line" d="M640 205 V 295" />
+              <path className="line" d="M640 345 V 295" />
+              
+
+              {/* Frontend Client */}
+              <g transform="translate(350, 80)">
+                <rect
+                  className="box-frontend"
+                  width="200"
+                  height="80"
+                  rx="12"
+                  strokeWidth="1.5"
+                />
+                <rect
+                  className="pill-frontend"
+                  x="50"
+                  y="-10"
+                  width="100"
+                  height="20"
+                  rx="10"
+                />
+                <text className="box-label font-body" x="100" y="5">
+                  Frontend Client
+                </text>
+                <text
+                  className="box-title font-headline text-frontend"
+                  x="100"
+                  y="40"
                 >
-                  <path
-                    d="M 40 0 L 0 0 0 40"
-                    fill="none"
-                    stroke="hsl(var(--border) / 0.2)"
-                    strokeWidth="1"
-                  />
-                </pattern>
-                <linearGradient id="box-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" style={{ stopColor: 'hsl(var(--muted))', stopOpacity: 0.6 }} />
-                  <stop offset="100%" style={{ stopColor: 'hsl(var(--muted))', stopOpacity: 0.1 }} />
-                </linearGradient>
-                <marker
-                  id="arrowhead"
-                  markerWidth="10"
-                  markerHeight="7"
-                  refX="8"
-                  refY="3.5"
-                  orient="auto"
+                  React.js SPA
+                </text>
+                <text
+                  className="box-desc font-body text-frontend"
+                  fillOpacity="0.7"
+                  x="100"
+                  y="60"
                 >
-                  <path d="M0 0 L10 3.5 L0 7 z" fill="hsl(var(--primary))" />
-                </marker>
-              </defs>
-
-              <rect width="100%" height="100%" fill="url(#grid)" />
-
-              {/* Client Box */}
-              <g transform="translate(50, 150)">
-                <rect width="180" height="100" rx="10" className="box" />
-                <path d="M20 35 h20 l-5 10 l5 10 h-20 v-20 M30 35 v20" stroke="hsl(var(--primary))" strokeWidth="1.5" fill="none" transform="translate(10, -5) scale(1.2)" />
-                <text x="90" y="45" textAnchor="middle" className="text" fontSize="18">
-                  Client
-                </text>
-                <text x="90" y="65" textAnchor="middle" className="text-sm">
-                  Next.js / React
+                  User Interface &amp; State Mgmt
                 </text>
               </g>
 
-              {/* App Hosting Box */}
-              <g transform="translate(310, 150)">
-                <rect width="180" height="100" rx="10" className="box" />
-                <path d="M 20 40 C 20 30, 40 30, 40 40 S 60 50, 60 40" stroke="hsl(var(--primary))" strokeWidth="1.5" fill="none" transform="translate(-5, -10) scale(1.2)" />
-                <path d="M 15 50 H 65" stroke="hsl(var(--primary))" strokeWidth="1.5" fill="none" transform="translate(-5, -10) scale(1.2)" />
-                <text x="90" y="45" textAnchor="middle" className="text" fontSize="18">
-                  App Hosting
+              {/* Authentication */}
+              <g transform="translate(80, 245)">
+                <rect
+                  className="box-security"
+                  width="220"
+                  height="100"
+                  rx="12"
+                  strokeWidth="1.5"
+                />
+                <rect
+                  className="pill-security"
+                  x="80"
+                  y="-10"
+                  width="60"
+                  height="20"
+                  rx="10"
+                />
+                <text className="box-label font-body" x="110" y="5">
+                  Security
                 </text>
-                <text x="90" y="65" textAnchor="middle" className="text-sm">
-                  Firebase Serverless
+                <text
+                  className="box-title font-headline text-security"
+                  x="110"
+                  y="45"
+                >
+                  Authentication
+                </text>
+                <text
+                  className="box-desc font-body text-security"
+                  fillOpacity="0.7"
+                  x="110"
+                  y="65"
+                >
+                  Firebase Auth (Google Login)
                 </text>
               </g>
 
-              {/* Google AI Box */}
-              <g transform="translate(570, 150)">
-                <rect width="180" height="100" rx="10" className="box" />
-                <circle cx="25" cy="25" r="3" className="icon" transform="translate(10, 5)"/>
-                <path d="M 25 28 v 15" stroke="hsl(var(--primary))" strokeWidth="1.5" />
-                <path d="M 18 35 h 14" stroke="hsl(var(--primary))" strokeWidth="1.5" />
-                <path d="M 20 48 C 22 44, 28 44, 30 48" stroke="hsl(var(--primary))" strokeWidth="1.5" fill="none"/>
-                <text x="90" y="45" textAnchor="middle" className="text" fontSize="18">
-                  Google AI
+              {/* Prompt Engineering Engine */}
+              <g transform="translate(350, 220)">
+                <rect
+                  className="box-orchestration"
+                  width="200"
+                  height="100"
+                  rx="20"
+                  strokeWidth="1.5"
+                />
+                <rect
+                  className="pill-orchestration"
+                  x="55"
+                  y="-10"
+                  width="90"
+                  height="20"
+                  rx="10"
+                />
+                <text className="box-label font-body" x="100" y="5">
+                  Orchestration
                 </text>
-                <text x="90" y="65" textAnchor="middle" className="text-sm">
-                  Gemini / Genkit
+                <text
+                  className="box-title font-headline text-orchestration"
+                  x="100"
+                  y="40"
+                  fontSize="14"
+                >
+                  Prompt Engineering Engine
+                </text>
+                <text
+                  className="box-desc font-body text-orchestration"
+                  fillOpacity="0.7"
+                  x="100"
+                  y="65"
+                >
+                  Context Management &amp; Sanitization
                 </text>
               </g>
 
-              {/* Arrows */}
-              <path d="M235 200 H 305" className="animated-arrow" />
-              <text x="270" y="190" textAnchor="middle" className="arrow-text">
-                Request
-              </text>
-              <path d="M495 200 H 565" className="animated-arrow" />
-              <text x="530" y="190" textAnchor="middle" className="arrow-text">
-                API Call
-              </text>
+              {/* Firestore DB */}
+              <g transform="translate(660, 160)">
+                <rect
+                  className="box-storage"
+                  width="180"
+                  height="90"
+                  rx="12"
+                  strokeWidth="1.5"
+                />
+                <rect
+                  className="pill-storage"
+                  x="65"
+                  y="-10"
+                  width="50"
+                  height="20"
+                  rx="10"
+                />
+                <text className="box-label font-body" x="90" y="5">
+                  Storage
+                </text>
+                <text
+                  className="box-title font-headline text-storage"
+                  x="90"
+                  y="40"
+                >
+                  Firestore DB
+                </text>
+                <text
+                  className="box-desc font-body text-storage"
+                  fillOpacity="0.7"
+                  x="90"
+                  y="60"
+                >
+                  User Profiles &amp; Saved Notes
+                </text>
+              </g>
+
+              {/* History Service */}
+              <g transform="translate(660, 300)">
+                <rect
+                  className="box-history"
+                  width="180"
+                  height="90"
+                  rx="12"
+                  strokeWidth="1.5"
+                />
+                <rect
+                  className="pill-history"
+                  x="65"
+                  y="-10"
+                  width="50"
+                  height="20"
+                  rx="10"
+                />
+                <text className="box-label font-body" x="90" y="5">
+                  History
+                </text>
+                <text
+                  className="box-title font-headline text-history"
+                  x="90"
+                  y="40"
+                >
+                  History Service
+                </text>
+                <text
+                  className="box-desc font-body text-history"
+                  fillOpacity="0.7"
+                  x="90"
+                  y="60"
+                >
+                  Chat Logs &amp; Context
+                </text>
+              </g>
+
+              {/* Google Gemini API */}
+              <g transform="translate(300, 470)">
+                <rect
+                  className="box-api"
+                  width="300"
+                  height="90"
+                  rx="12"
+                  strokeWidth="1.5"
+                />
+                <rect
+                  className="pill-api"
+                  x="110"
+                  y="-10"
+                  width="80"
+                  height="20"
+                  rx="10"
+                />
+                <text className="box-label font-body" x="150" y="5">
+                  External API
+                </text>
+                <text
+                  className="box-title font-headline text-api-title"
+                  x="150"
+                  y="45"
+                >
+                  Google Gemini API
+                </text>
+                <text
+                  className="box-desc font-body text-api-desc"
+                  fillOpacity="0.9"
+                  x="150"
+                  y="65"
+                >
+                  LLM Processing (Flash Model)
+                </text>
+              </g>
             </svg>
           </CardContent>
         </Card>
