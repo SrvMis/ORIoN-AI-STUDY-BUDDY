@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { useUser } from '@/firebase';
 import {
   Card,
   CardContent,
@@ -60,7 +60,21 @@ const chartConfig = {
 
 
 export default function ProfilePage() {
-  const userAvatar = PlaceHolderImages.find((img) => img.id === 'user-avatar');
+  const { user } = useUser();
+
+  if (!user) {
+    return null;
+  }
+
+  const getInitials = (name: string | null | undefined) => {
+    if (!name) return 'U';
+    const names = name.split(' ');
+    if (names.length > 1) {
+      return names[0][0] + names[names.length - 1][0];
+    }
+    return name[0];
+  };
+
 
   return (
     <div className="container mx-auto max-w-4xl">
@@ -80,20 +94,19 @@ export default function ProfilePage() {
               <CardContent className="pt-6">
                 <div className="flex flex-col items-center space-y-4">
                   <Avatar className="h-24 w-24">
-                    {userAvatar && (
+                    {user.photoURL && (
                       <AvatarImage
-                        src={userAvatar.imageUrl}
+                        src={user.photoURL}
                         alt="User Avatar"
                         width={100}
                         height={100}
-                        data-ai-hint={userAvatar.imageHint}
                       />
                     )}
-                    <AvatarFallback>U</AvatarFallback>
+                    <AvatarFallback>{getInitials(user.displayName)}</AvatarFallback>
                   </Avatar>
                   <div className="text-center">
-                    <h2 className="text-xl font-semibold">Jane Doe</h2>
-                    <p className="text-muted-foreground">user@studyverse.ai</p>
+                    <h2 className="text-xl font-semibold">{user.displayName || 'User'}</h2>
+                    <p className="text-muted-foreground">{user.email}</p>
                   </div>
                   <Badge>Pro Member</Badge>
                 </div>

@@ -1,5 +1,9 @@
+'use client';
+
 import Link from 'next/link';
-import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { getAuth, signOut } from 'firebase/auth';
+import { useUser } from '@/firebase';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,36 +15,54 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { User, LogOut } from 'lucide-react';
 
 export function UserNav() {
-  const userAvatar = PlaceHolderImages.find((img) => img.id === 'user-avatar');
+  const { user } = useUser();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    const auth = getAuth();
+    await signOut(auth);
+    router.push('/login');
+  };
+  
+  if (!user) {
+    return null;
+  }
+
+  const getInitials = (name: string | null | undefined) => {
+    if (!name) return 'U';
+    const names = name.split(' ');
+    if (names.length > 1) {
+      return names[0][0] + names[names.length - 1][0];
+    }
+    return name[0];
+  };
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-10 w-10 rounded-full">
           <Avatar className="h-10 w-10">
-            {userAvatar && (
+            {user.photoURL && (
               <AvatarImage
-                src={userAvatar.imageUrl}
+                src={user.photoURL}
                 alt="User Avatar"
-                width={100}
-                height={100}
-                data-ai-hint={userAvatar.imageHint}
+                width={40}
+                height={40}
               />
             )}
-            <AvatarFallback>U</AvatarFallback>
+            <AvatarFallback>{getInitials(user.displayName)}</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">User</p>
+            <p className="text-sm font-medium leading-none">{user.displayName || 'User'}</p>
             <p className="text-xs leading-none text-muted-foreground">
-              user@studyverse.ai
+              {user.email}
             </p>
           </div>
         </DropdownMenuLabel>
@@ -54,7 +76,7 @@ export function UserNav() {
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem>
+        <DropdownMenuItem onClick={handleLogout}>
           <LogOut />
           Log out
         </DropdownMenuItem>
