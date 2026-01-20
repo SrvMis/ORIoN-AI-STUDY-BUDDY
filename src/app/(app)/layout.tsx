@@ -27,24 +27,20 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { LanguageProvider, useLanguage, availableLanguages } from '@/context/language-provider';
+import { useTranslation } from '@/hooks/use-translation';
 
-const sidebarNavItems = [
-  { href: '/chat', icon: GraduationCap, label: 'Explain Topic' },
-  { href: '/quiz', icon: FileText, label: 'Generate Quiz' },
-  { href: '/summarizer', icon: BookText, label: 'Summarize Text' },
-  { href: '/story', icon: Feather, label: 'Create a Story' },
-];
 
-const tabNavItems = [
-  { href: '/chat', label: 'Interactive Prototype' },
-  { href: '/system-architecture', label: 'System Architecture' },
-  { href: '/tech-specs', label: 'Tech Specs' },
-];
-
-// Create a new component for the sidebar content to use the hook
 function SidebarContent() {
   const pathname = usePathname();
   const { language, setLanguage } = useLanguage();
+  const { t } = useTranslation();
+
+  const sidebarNavItems = [
+    { href: '/chat', icon: GraduationCap, label: t('Explain Topic') },
+    { href: '/quiz', icon: FileText, label: t('Generate Quiz') },
+    { href: '/summarizer', icon: BookText, label: t('Summarize Text') },
+    { href: '/story', icon: Feather, label: t('Create a Story') },
+  ];
 
   return (
     <>
@@ -54,7 +50,7 @@ function SidebarContent() {
 
       <div className="space-y-4">
         <h2 className="px-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Modes
+          {t('Modes')}
         </h2>
         <nav className="flex flex-col gap-2">
           {sidebarNavItems.map((item) => (
@@ -77,7 +73,7 @@ function SidebarContent() {
           >
             <Link href="/chat">
               <Trash2 className="h-5 w-5" />
-              <span>Clear Chat</span>
+              <span>{t('Clear Chat')}</span>
             </Link>
           </Button>
         </nav>
@@ -85,15 +81,15 @@ function SidebarContent() {
 
       <div className="mt-auto space-y-4">
         <h2 className="px-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Configuration
+          {t('Configuration')}
         </h2>
         <div className="flex items-center justify-between rounded-lg border bg-card p-3">
-          <span className="text-sm font-medium">Dark Mode</span>
+          <span className="text-sm font-medium">{t('Dark Mode')}</span>
           <ThemeToggle />
         </div>
         <div className="rounded-lg border bg-card p-3">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium">Language</span>
+            <span className="text-sm font-medium">{t('Language')}</span>
             <Languages className="h-5 w-5 text-muted-foreground" />
           </div>
           <Select
@@ -101,7 +97,7 @@ function SidebarContent() {
             defaultValue={language}
           >
             <SelectTrigger className="mt-2 w-full">
-              <SelectValue placeholder="Select language" />
+              <SelectValue placeholder={t('Select language')} />
             </SelectTrigger>
             <SelectContent>
               {availableLanguages.map((lang) => (
@@ -117,15 +113,21 @@ function SidebarContent() {
   );
 }
 
-export default function AppLayout({ children }: { children: React.ReactNode }) {
+function LayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const { t } = useTranslation();
 
   const activeTab = ['/chat', '/quiz', '/summarizer', '/story'].includes(pathname)
     ? '/chat'
     : pathname;
 
+  const tabNavItems = [
+    { href: '/chat', label: t('Interactive Prototype') },
+    { href: '/system-architecture', label: t('System Architecture') },
+    { href: '/tech-specs', label: t('Tech Specs') },
+  ];
+  
   return (
-    <LanguageProvider>
       <div className="flex min-h-screen bg-background font-sans text-foreground">
         {/* Left Sidebar */}
         <aside className="flex h-screen w-72 flex-col gap-8 border-r bg-secondary/50 p-4">
@@ -148,6 +150,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           <main className="flex-1 overflow-y-auto p-6">{children}</main>
         </div>
       </div>
+  );
+}
+
+export default function AppLayout({ children }: { children: React.ReactNode }) {
+   return (
+    <LanguageProvider>
+      <LayoutContent>{children}</LayoutContent>
     </LanguageProvider>
   );
 }
