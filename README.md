@@ -9,7 +9,6 @@
 **An AI-powered learning companion designed to make studying more interactive, efficient, and personalized. Built with Next.js, Genkit, and Google's Gemini model.**
 
 
-https://9000-firebase-studio-1768879607450.cluster-ikxjzjhlifcwuroomfkjrx437g.cloudworkstations.dev/chat?embedded=0&monospaceUid=663213
 ---
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
