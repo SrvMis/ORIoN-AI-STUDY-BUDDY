@@ -12,12 +12,14 @@ import {
   Volume2,
   Copy,
   SendHorizonal,
+  Terminal,
 } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from '@/hooks/use-translation';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const formSchema = z.object({
   query: z.string().min(2, {
@@ -187,6 +189,17 @@ export default function ChatPage() {
       <audio ref={audioRef} />
       <ScrollArea className="flex-1" ref={scrollAreaRef}>
         <div className="container mx-auto max-w-4xl space-y-8 p-4">
+          <Alert className="border-primary">
+            <Terminal className="h-4 w-4" />
+            <AlertTitle className="font-bold">Can't find the Terminal?</AlertTitle>
+            <AlertDescription>
+              The terminal panel is at the bottom of the screen. If it's hidden, try one of these methods:
+              <ul className="list-disc pl-5 mt-2">
+                <li>Press the keyboard shortcut: <kbd className="px-2 py-1.5 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-200 rounded-lg dark:bg-gray-600 dark:text-gray-100 dark:border-gray-500">Ctrl</kbd> + <kbd className="px-2 py-1.5 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-200 rounded-lg dark:bg-gray-600 dark:text-gray-100 dark:border-gray-500">`</kbd> (the backtick key).</li>
+                <li>Go to the main menu at the top of the screen and select <strong>View &gt; Terminal</strong>.</li>
+              </ul>
+            </AlertDescription>
+          </Alert>
           {messages.map((message) => (
             <div
               key={message.id}
