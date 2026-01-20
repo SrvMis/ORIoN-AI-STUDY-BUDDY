@@ -21,8 +21,10 @@ import {
   SidebarMenuButton,
   SidebarInset,
   SidebarTrigger,
+  SidebarFooter,
 } from '@/components/ui/sidebar';
 import Logo from '@/components/common/logo';
+import { ThemeToggle } from '@/components/common/theme-toggle';
 
 const navItems = [
   { href: '/chat', icon: MessageSquare, label: 'AI Chat' },
@@ -64,6 +66,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             ))}
           </SidebarMenu>
         </SidebarContent>
+        <SidebarFooter>
+          <ThemeToggle />
+        </SidebarFooter>
       </Sidebar>
       <SidebarInset>
         <header className="flex h-14 items-center justify-between border-b bg-card px-4 lg:px-6">
