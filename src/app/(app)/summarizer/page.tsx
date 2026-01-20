@@ -48,8 +48,8 @@ export default function SummarizerPage() {
       try {
         const result = await summarizeText(values);
         setSummary(result.summary);
-      } catch (e) {
-        setError('An error occurred while summarizing. Please try again.');
+      } catch (e: any) {
+        setError(e.message || 'An error occurred while summarizing. Please try again.');
         console.error(e);
       }
     });

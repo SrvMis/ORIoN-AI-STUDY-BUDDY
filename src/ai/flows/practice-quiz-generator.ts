@@ -73,6 +73,9 @@ const generateQuizFlow = ai.defineFlow(
     outputSchema: GenerateQuizOutputSchema,
   },
   async input => {
+    if (!process.env.GEMINI_API_KEY && !process.env.GOOGLE_API_KEY) {
+      throw new Error('Missing API key. Please set GEMINI_API_KEY in your .env file.');
+    }
     const {output} = await prompt(input);
     return output!;
   }

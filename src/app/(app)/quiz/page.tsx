@@ -53,6 +53,7 @@ export default function QuizPage() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [score, setScore] = useState(0);
   const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
 
   const setupForm = useForm<z.infer<typeof setupFormSchema>>({
     resolver: zodResolver(setupFormSchema),
@@ -61,15 +62,16 @@ export default function QuizPage() {
 
   const handleStartQuiz = (values: z.infer<typeof setupFormSchema>) => {
     setQuizState('generating');
+    setError(null);
     startTransition(async () => {
       try {
         const result = await generateQuiz(values);
         setQuiz(result.quiz);
         setUserAnswers(new Array(result.quiz.length).fill(''));
         setQuizState('active');
-      } catch (e) {
+      } catch (e: any) {
         console.error(e);
-        // In a real app, show a toast or error message
+        setError(e.message || 'An error occurred while generating the quiz.');
         setQuizState('setup');
       }
     });
@@ -103,6 +105,7 @@ export default function QuizPage() {
     setUserAnswers([]);
     setCurrentQuestionIndex(0);
     setScore(0);
+    setError(null);
     setupForm.reset();
   };
 
@@ -274,6 +277,18 @@ export default function QuizPage() {
             prepare for exams.
           </p>
         </header>
+
+        {error && (
+          <Card className="border-destructive">
+            <CardHeader>
+              <CardTitle className="text-destructive">Error</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p>{error}</p>
+            </CardContent>
+          </Card>
+        )}
+        
         {renderContent()}
       </div>
     </div>

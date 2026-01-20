@@ -54,8 +54,8 @@ export default function ChatPage() {
       try {
         const result = await answerQuestion(values);
         setAnswer(result.answer);
-      } catch (e) {
-        setError('An error occurred. Please try again.');
+      } catch (e: any) {
+        setError(e.message || 'An error occurred. Please try again.');
         console.error(e);
       }
     });
