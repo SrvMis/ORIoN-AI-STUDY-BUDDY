@@ -4,81 +4,120 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import React from 'react';
 import {
-  MessageSquare,
-  ClipboardCheck,
+  GraduationCap,
   FileText,
-  BotMessageSquare,
+  Trash2,
+  MessageSquare,
   Network,
   Cpu,
 } from 'lucide-react';
-import {
-  SidebarProvider,
-  Sidebar,
-  SidebarHeader,
-  SidebarContent,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
-  SidebarInset,
-  SidebarTrigger,
-  SidebarFooter,
-} from '@/components/ui/sidebar';
 import Logo from '@/components/common/logo';
 import { ThemeToggle } from '@/components/common/theme-toggle';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@/components/ui/tabs';
 
-const navItems = [
-  { href: '/chat', icon: MessageSquare, label: 'AI Chat' },
-  { href: '/quiz', icon: ClipboardCheck, label: 'Quiz Generator' },
-  { href: '/summarizer', icon: FileText, label: 'Text Summarizer' },
-  { href: '/story', icon: BotMessageSquare, label: 'Story Generator' },
-  {
-    href: '/system-architecture',
-    icon: Network,
-    label: 'System Architecture',
-  },
-  { href: '/tech-specs', icon: Cpu, label: 'Tech Specs' },
+const sidebarNavItems = [
+  { href: '/chat', icon: GraduationCap, label: 'Explain Topic' },
+  { href: '/quiz', icon: FileText, label: 'Generate Quiz' },
+];
+
+const tabNavItems = [
+  { href: '/chat', label: 'Interactive Prototype' },
+  { href: '/system-architecture', label: 'System Architecture' },
+  { href: '/tech-specs', label: 'Tech Specs' },
+];
+
+const examplePrompts = [
+  'Photosynthesis',
+  'Gravity',
+  'Python Loop',
+  'French Revolution',
 ];
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   return (
-    <SidebarProvider>
-      <Sidebar>
-        <SidebarHeader>
+    <div className="flex min-h-screen bg-background font-sans text-foreground">
+      {/* Left Sidebar */}
+      <aside className="flex h-screen w-72 flex-col gap-8 border-r bg-secondary/50 p-4">
+        <header className="flex items-center gap-2">
           <Logo />
-        </SidebarHeader>
-        <SidebarContent>
-          <SidebarMenu>
-            {navItems.map((item) => (
-              <SidebarMenuItem key={item.href}>
-                <SidebarMenuButton
-                  asChild
-                  isActive={pathname === item.href}
-                  tooltip={item.label}
-                >
-                  <Link href={item.href}>
-                    <item.icon />
-                    <span>{item.label}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            ))}
-          </SidebarMenu>
-        </SidebarContent>
-        <SidebarFooter>
-          <ThemeToggle />
-        </SidebarFooter>
-      </Sidebar>
-      <SidebarInset>
-        <header className="flex h-14 items-center justify-between border-b bg-card px-4 lg:px-6">
-          <SidebarTrigger className="md:hidden" />
-          <div className="flex w-full items-center justify-end gap-4">
-            {/* UserNav used to be here */}
-          </div>
+          <Badge variant="outline">v1.0 Blueprint</Badge>
         </header>
-        <main className="flex-1 overflow-y-auto p-4 md:p-8">{children}</main>
-      </SidebarInset>
-    </SidebarProvider>
+
+        <div className="space-y-4">
+          <h2 className="px-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Modes
+          </h2>
+          <nav className="flex flex-col gap-2">
+            {sidebarNavItems.map((item) => (
+              <Button
+                key={item.href}
+                variant={pathname === item.href ? 'secondary' : 'ghost'}
+                className="justify-start gap-3 px-3"
+                asChild
+              >
+                <Link href={item.href}>
+                  <item.icon className="h-5 w-5" />
+                  <span>{item.label}</span>
+                </Link>
+              </Button>
+            ))}
+            <Button
+              variant="ghost"
+              className="justify-start gap-3 px-3"
+              asChild
+            >
+              <Link href="/chat">
+                <Trash2 className="h-5 w-5" />
+                <span>Clear Chat</span>
+              </Link>
+            </Button>
+          </nav>
+        </div>
+
+        <div className="space-y-4">
+          <h2 className="px-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Configuration
+          </h2>
+          <div className="flex items-center justify-between rounded-lg border bg-card p-3">
+            <span className="text-sm font-medium">Dark Mode</span>
+            <ThemeToggle />
+          </div>
+        </div>
+
+        <div className="mt-auto space-y-4 rounded-lg border bg-card p-3">
+          <h3 className="text-sm font-semibold">Try asking about:</h3>
+          <ul className="list-disc space-y-2 pl-4 text-sm text-muted-foreground">
+            {examplePrompts.map((prompt) => (
+              <li key={prompt}>&quot;{prompt}&quot;</li>
+            ))}
+          </ul>
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <div className="flex flex-1 flex-col">
+        <header className="border-b bg-card px-6 py-2">
+          <Tabs value={pathname} className="w-full">
+            <TabsList>
+              {tabNavItems.map((item) => (
+                <Link key={item.href} href={item.href} legacyBehavior passHref>
+                  <TabsTrigger value={item.href}>{item.label}</TabsTrigger>
+                </Link>
+              ))}
+            </TabsList>
+          </Tabs>
+        </header>
+        <main className="flex-1 overflow-y-auto p-6">{children}</main>
+      </div>
+    </div>
   );
 }

@@ -4,78 +4,53 @@
 
 @layer base {
   :root {
-    --background: 210 40% 98%;
+    --background: 220 20% 97%;
     --foreground: 224 71.4% 4.1%;
     --card: 0 0% 100%;
     --card-foreground: 224 71.4% 4.1%;
     --popover: 0 0% 100%;
     --popover-foreground: 224 71.4% 4.1%;
-    --primary: 180 93% 40%;
+    --primary: 259 92% 64%;
     --primary-foreground: 210 20% 98%;
-    --secondary: 210 40% 96.1%;
+    --secondary: 220 30% 95%;
     --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
+    --muted: 220 30% 92%;
     --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 280 90% 60%;
+    --accent: 259 92% 64%;
     --accent-foreground: 210 40% 98%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 88%;
-    --input: 214.3 31.8% 88%;
-    --ring: 180 93% 45%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 259 92% 64%;
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
-    --radius: 0.75rem;
-
-    /* Sidebar variables */
-    --sidebar-background: 210 40% 96.1%;
-    --sidebar-foreground: 224 71.4% 4.1%;
-    --sidebar-primary: 180 93% 40%;
-    --sidebar-primary-foreground: 210 20% 98%;
-    --sidebar-accent: 214.3 31.8% 91.4%;
-    --sidebar-accent-foreground: 224 71.4% 4.1%;
-    --sidebar-border: 214.3 31.8% 86.4%;
-    --sidebar-ring: 180 93% 45%;
+    --radius: 0.5rem;
   }
 
   .dark {
-    --background: 224 71.4% 4.1%;
-    --foreground: 210 20% 98%;
-    --card: 224 71% 10%;
-    --card-foreground: 210 20% 98%;
-    --popover: 224 71.4% 4.1%;
-    --popover-foreground: 210 20% 98%;
-    --primary: 180 93% 50%;
-    --primary-foreground: 180 93% 10%;
-    --secondary: 215 27.9% 16.9%;
-    --secondary-foreground: 210 20% 98%;
-    --muted: 215 27.9% 16.9%;
-    --muted-foreground: 217.9 10.6% 64.9%;
-    --accent: 280 90% 65%;
+    --background: 222 47% 11%;
+    --foreground: 210 40% 98%;
+    --card: 222 47% 14%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222 47% 11%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 259 92% 70%;
+    --primary-foreground: 210 20% 98%;
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217 33% 20%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 259 92% 70%;
     --accent-foreground: 210 20% 98%;
-    --destructive: 0 62.8% 30.6%;
+    --destructive: 0 63% 31%;
     --destructive-foreground: 210 40% 98%;
-    --border: 215 28% 25%;
-    --input: 215 28% 25%;
-    --ring: 180 93% 60%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
-
-    /* Dark Sidebar variables */
-    --sidebar-background: 224 71.4% 4.1%;
-    --sidebar-foreground: 210 20% 98%;
-    --sidebar-primary: 180 93% 50%;
-    --sidebar-primary-foreground: 210 20% 98%;
-    --sidebar-accent: 215 27.9% 16.9%;
-    --sidebar-accent-foreground: 210 20% 98%;
-    --sidebar-border: 215 28% 25%;
-    --sidebar-ring: 180 93% 60%;
+    --border: 217 33% 25%;
+    --input: 217 33% 25%;
+    --ring: 259 92% 70%;
   }
 }
 
@@ -85,38 +60,5 @@
   }
   body {
     @apply bg-background text-foreground;
-    position: relative;
-    overflow-x: hidden;
-  }
-
-  body::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 200%;
-    height: 200%;
-    z-index: -1;
-    background-image: linear-gradient(
-        hsl(var(--primary) / 0.1) 1px,
-        transparent 1px
-      ),
-      linear-gradient(to right, hsl(var(--primary) / 0.1) 1px, transparent 1px);
-    background-size: 60px 60px;
-    animation: background-grid 20s linear infinite;
-    transform: translate(-50%, -50%);
-    will-change: background-position;
-  }
-
-  .dark body::before {
-    background-image: linear-gradient(
-        hsl(var(--primary) / 0.15) 1px,
-        transparent 1px
-      ),
-      linear-gradient(
-        to right,
-        hsl(var(--primary) / 0.15) 1px,
-        transparent 1px
-      );
   }
 }

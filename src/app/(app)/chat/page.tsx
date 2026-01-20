@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition, useRef } from 'react';
+import { useState, useTransition, useRef, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -22,28 +22,23 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
 import {
   Loader2,
   Sparkles,
   Volume2,
   User,
-  Trash2,
-  MessageSquare,
-  Pin,
+  Copy,
+  SendHorizonal,
+  Mic,
 } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { cn } from '@/lib/utils';
-import { Separator } from '@/components/ui/separator';
+import { useToast } from '@/hooks/use-toast';
 
 const formSchema = z.object({
-  topic: z.string().min(2, {
-    message: 'Topic must be at least 2 characters.',
-  }),
-  question: z.string().min(10, {
-    message: 'Question must be at least 10 characters.',
+  query: z.string().min(2, {
+    message: 'Query must be at least 2 characters.',
   }),
 });
 
@@ -51,32 +46,43 @@ type Message = {
   id: number;
   role: 'user' | 'assistant';
   content: string;
-  topic?: string;
-  pinned: boolean;
+  isError?: boolean;
+};
+
+const WelcomeMessage: Message = {
+  id: 0,
+  role: 'assistant',
+  content: "Hello! I am your AI Study Buddy. Select a mode on the left and let's start learning.",
 };
 
 export default function ChatPage() {
   const [isPending, startTransition] = useTransition();
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [latestAssistantMessageId, setLatestAssistantMessageId] = useState<
-    number | null
-  >(null);
+  const [messages, setMessages] = useState<Message[]>([WelcomeMessage]);
   const [error, setError] = useState<string | null>(null);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      topic: '',
-      question: '',
+      query: '',
     },
   });
+
+  useEffect(() => {
+    if (scrollAreaRef.current) {
+      scrollAreaRef.current.scrollTo({
+        top: scrollAreaRef.current.scrollHeight,
+        behavior: 'smooth',
+      });
+    }
+  }, [messages]);
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     startTransition(async () => {
       setError(null);
-      setLatestAssistantMessageId(null);
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current.src = '';
@@ -84,27 +90,43 @@ export default function ChatPage() {
       const userMessage: Message = {
         id: Date.now(),
         role: 'user',
-        content: values.question,
-        topic: values.topic,
-        pinned: false,
+        content: values.query,
       };
       setMessages((prev) => [...prev, userMessage]);
 
+      const loadingMessage: Message = {
+        id: Date.now() + 1,
+        role: 'assistant',
+        content: '...', // Placeholder for loading
+      };
+      setMessages((prev) => [...prev, loadingMessage]);
+
       try {
-        const result = await answerQuestion(values);
+        const result = await answerQuestion({
+          topic: values.query, // Using query for both
+          question: values.query,
+        });
         const assistantMessage: Message = {
           id: Date.now() + 1,
           role: 'assistant',
           content: result.answer,
-          pinned: false,
         };
-        setMessages((prev) => [...prev, assistantMessage]);
-        setLatestAssistantMessageId(assistantMessage.id);
+        setMessages((prev) =>
+          prev.map((m) => (m.id === loadingMessage.id ? assistantMessage : m))
+        );
       } catch (e: any) {
-        setError(e.message || 'An error occurred. Please try again.');
+        const errorMessage: Message = {
+          id: Date.now() + 1,
+          role: 'assistant',
+          content: e.message || 'An error occurred. Please try again.',
+          isError: true,
+        };
+        setMessages((prev) =>
+          prev.map((m) => (m.id === loadingMessage.id ? errorMessage : m))
+        );
         console.error(e);
       }
-      form.reset({ topic: values.topic, question: '' });
+      form.reset({ query: '' });
     });
   }
 
@@ -126,9 +148,12 @@ export default function ChatPage() {
         if (playPromise !== undefined) {
           playPromise.catch((e) => {
             console.error('Audio playback failed:', e);
-            setError(
-              'Could not play audio. Your browser might be blocking it or the format is not supported.'
-            );
+            toast({
+              variant: 'destructive',
+              title: 'Audio Error',
+              description:
+                'Could not play audio. Your browser might be blocking it.',
+            });
             setIsSpeaking(false);
           });
         }
@@ -137,337 +162,135 @@ export default function ChatPage() {
         };
       }
     } catch (e: any) {
-      setError(e.message || 'An error occurred during text-to-speech.');
+      toast({
+        variant: 'destructive',
+        title: 'Text-to-Speech Error',
+        description: e.message || 'An error occurred during text-to-speech.',
+      });
       console.error(e);
       setIsSpeaking(false);
     }
   };
 
-  const handleClearChat = () => {
-    setMessages([]);
-    setError(null);
-    setLatestAssistantMessageId(null);
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.src = '';
-    }
+  const handleCopy = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast({ title: 'Copied to clipboard!' });
   };
 
-  const handlePinMessage = (id: number) => {
-    setMessages((prev) =>
-      prev.map((msg) => (msg.id === id ? { ...msg, pinned: !msg.pinned } : msg))
+  const renderMessageContent = (message: Message) => {
+    if (message.role === 'assistant' && message.content === '...') {
+      return (
+        <div className="flex items-center gap-2">
+          <Loader2 className="h-5 w-5 animate-spin" />
+          <span>Thinking...</span>
+        </div>
+      );
+    }
+    return (
+      <p className={message.isError ? 'text-destructive' : ''}>
+        {message.isError && (
+          <span className="font-bold">Error: </span>
+        )}
+        {message.content}
+      </p>
     );
   };
 
-  const pinnedMessages = messages.filter((m) => m.pinned);
-  const regularMessages = messages.filter((m) => !m.pinned);
-  const latestAssistantMessage = messages.find(
-    (m) => m.id === latestAssistantMessageId
-  );
-
-  const renderMessage = (message: Message) => (
-    <div key={message.id} className="flex items-start gap-4">
-      <Avatar className="h-8 w-8 border">
-        <AvatarFallback className="bg-transparent">
-          {message.role === 'user' ? (
-            <User />
-          ) : (
-            <Sparkles className="text-primary" />
-          )}
-        </AvatarFallback>
-      </Avatar>
-      <Card className="flex-1">
-        <CardHeader className="p-4">
-          <div className="flex items-center justify-between">
-            <p className="font-semibold">
-              {message.role === 'user' ? 'You' : 'AI Study Buddy'}
-            </p>
-            <div className="flex items-center">
-              {message.role === 'assistant' && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => handleReadAloud(message.content)}
-                  disabled={isPending || isSpeaking}
-                  className="h-8 w-8"
-                >
-                  {isSpeaking ? (
-                    <Loader2 className="animate-spin" />
-                  ) : (
-                    <Volume2 />
-                  )}
-                  <span className="sr-only">Read aloud</span>
-                </Button>
-              )}
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => handlePinMessage(message.id)}
-                disabled={isPending}
-                className="h-8 w-8"
-              >
-                <Pin
-                  className={cn(
-                    'h-4 w-4',
-                    message.pinned && 'fill-primary text-primary'
-                  )}
-                />
-                <span className="sr-only">
-                  {message.pinned ? 'Unpin message' : 'Pin message'}
-                </span>
-              </Button>
-            </div>
-          </div>
-          {message.role === 'user' && message.topic && (
-            <p className="text-sm text-muted-foreground">
-              Topic: {message.topic}
-            </p>
-          )}
-        </CardHeader>
-        <CardContent className="p-4 pt-0">
-          <div className="prose prose-sm max-w-none text-foreground dark:prose-invert">
-            <p>{message.content}</p>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
-
   return (
-    <div className="container mx-auto max-w-7xl">
+    <div className="flex h-full flex-col">
       <audio ref={audioRef} />
-      <div className="space-y-8">
-        <header className="space-y-2">
-          <h1 className="font-headline text-4xl font-bold tracking-tighter">
-            AI Study Buddy
-          </h1>
-          <p className="text-muted-foreground">
-            Ask any question on any topic, and our AI will provide a clear,
-            concise explanation to help you learn.
-          </p>
-        </header>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-8">
-            <Card>
-              <CardHeader>
-                <CardTitle>Ask a Question</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Form {...form}>
-                  <form
-                    onSubmit={form.handleSubmit(onSubmit)}
-                    className="space-y-6"
-                  >
-                    <FormField
-                      control={form.control}
-                      name="topic"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Topic</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="e.g., Photosynthesis"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="question"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Your Question</FormLabel>
-                          <FormControl>
-                            <Textarea
-                              placeholder="e.g., What are the main inputs and outputs of the Calvin Cycle?"
-                              className="min-h-[120px]"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <Button type="submit" disabled={isPending || isSpeaking}>
-                      {isPending ? (
-                        <Loader2 className="animate-spin" />
+      <ScrollArea className="flex-1" ref={scrollAreaRef}>
+        <div className="container mx-auto max-w-4xl space-y-8 p-4">
+          {messages.map((message) => (
+            <div
+              key={message.id}
+              className={`flex items-start gap-4 ${
+                message.role === 'user' ? 'justify-end' : ''
+              }`}
+            >
+              {message.role === 'assistant' && (
+                <Avatar className="h-9 w-9 border-2 border-primary">
+                  <AvatarFallback className="bg-primary text-primary-foreground">
+                    AI
+                  </AvatarFallback>
+                </Avatar>
+              )}
+              <div
+                className={`max-w-2xl rounded-lg px-4 py-3 ${
+                  message.role === 'user'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-card'
+                }`}
+              >
+                <div className="prose prose-sm max-w-none text-current dark:prose-invert">
+                 {renderMessageContent(message)}
+                </div>
+                {message.role === 'assistant' && message.content !== '...' && message.id !== 0 && !message.isError && (
+                  <div className="-mb-2 mt-2 flex items-center gap-2 border-t pt-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleReadAloud(message.content)}
+                      disabled={isSpeaking}
+                      className="h-auto p-1 text-xs text-muted-foreground"
+                    >
+                      {isSpeaking ? (
+                        <Loader2 className="mr-1 h-3 w-3 animate-spin" />
                       ) : (
-                        <Sparkles className="mr-2" />
+                        <Volume2 className="mr-1 h-3 w-3" />
                       )}
-                      Get Answer
+                      Read Aloud
                     </Button>
-                  </form>
-                </Form>
-              </CardContent>
-            </Card>
-
-            {isPending && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Getting your answer...</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-start gap-4">
-                    <Avatar className="h-8 w-8 border">
-                      <AvatarFallback className="bg-transparent">
-                        <Sparkles className="text-primary" />
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 space-y-2">
-                      <div className="h-4 w-full animate-pulse rounded-md bg-muted" />
-                      <div className="h-4 w-3/4 animate-pulse rounded-md bg-muted" />
-                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleCopy(message.content)}
+                      className="h-auto p-1 text-xs text-muted-foreground"
+                    >
+                      <Copy className="mr-1 h-3 w-3" />
+                      Copy
+                    </Button>
                   </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {error && !isPending && (
-              <Card className="border-destructive">
-                <CardHeader>
-                  <CardTitle className="text-destructive">Error</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p>{error}</p>
-                </CardContent>
-              </Card>
-            )}
-
-            {latestAssistantMessage && !isPending && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
-                    <span>Here's your answer</span>
-                    <div className="flex items-center">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() =>
-                          handleReadAloud(latestAssistantMessage.content)
-                        }
-                        disabled={isPending || isSpeaking}
-                        className="h-8 w-8"
-                      >
-                        {isSpeaking ? (
-                          <Loader2 className="animate-spin" />
-                        ) : (
-                          <Volume2 />
-                        )}
-                        <span className="sr-only">Read aloud</span>
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() =>
-                          handlePinMessage(latestAssistantMessage.id)
-                        }
-                        disabled={isPending}
-                        className="h-8 w-8"
-                      >
-                        <Pin
-                          className={cn(
-                            'h-4 w-4',
-                            latestAssistantMessage.pinned &&
-                              'fill-primary text-primary'
-                          )}
-                        />
-                        <span className="sr-only">
-                          {latestAssistantMessage.pinned
-                            ? 'Unpin message'
-                            : 'Pin message'}
-                        </span>
-                      </Button>
-                    </div>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-start gap-4">
-                    <Avatar className="h-8 w-8 border">
-                      <AvatarFallback className="bg-transparent">
-                        <Sparkles className="text-primary" />
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="prose prose-sm max-w-none flex-1 text-foreground dark:prose-invert">
-                      <p>{latestAssistantMessage.content}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-          </div>
-
-          <div className="lg:col-span-1">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="font-headline text-2xl font-bold">
-                  Chat History
-                </h2>
-                {messages.length > 0 && (
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={handleClearChat}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                    <span className="sr-only">Clear Chat</span>
-                  </Button>
                 )}
               </div>
-              <Card>
-                <CardContent className="p-4">
-                  <ScrollArea className="h-[60vh]">
-                    <div className="space-y-6 pr-4">
-                      {messages.length === 0 && !isPending && (
-                        <div className="flex h-full flex-col items-center justify-center py-12 text-center text-muted-foreground">
-                          <MessageSquare className="h-10 w-10 mb-4" />
-                          <p>Your conversation history will appear here.</p>
-                        </div>
-                      )}
-
-                      {pinnedMessages.length > 0 && (
-                        <div className="space-y-6">
-                          <div className="flex items-center">
-                            <Pin className="h-4 w-4 mr-2 text-muted-foreground" />
-                            <h3 className="text-sm font-semibold text-muted-foreground">
-                              Pinned Messages
-                            </h3>
-                          </div>
-                          {pinnedMessages.map(renderMessage)}
-                          <Separator className="my-4" />
-                        </div>
-                      )}
-
-                      <div className="space-y-6">
-                        {regularMessages.map(renderMessage)}
-                      </div>
-
-                      {isPending && (
-                        <div className="flex items-start gap-4">
-                          <Avatar className="h-8 w-8 border">
-                            <AvatarFallback className="bg-transparent">
-                              <Sparkles className="text-primary" />
-                            </AvatarFallback>
-                          </Avatar>
-                          <Card className="flex-1">
-                            <CardContent className="p-4">
-                              <div className="space-y-2">
-                                <div className="h-4 w-full animate-pulse rounded-md bg-muted" />
-                                <div className="h-4 w-3/4 animate-pulse rounded-md bg-muted" />
-                              </div>
-                            </CardContent>
-                          </Card>
-                        </div>
-                      )}
-                    </div>
-                  </ScrollArea>
-                </CardContent>
-              </Card>
             </div>
-          </div>
+          ))}
+        </div>
+      </ScrollArea>
+      <div className="border-t bg-card/50 p-4">
+        <div className="container mx-auto max-w-4xl">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="relative">
+              <Textarea
+                placeholder="Type a topic or concept..."
+                className="min-h-12 resize-none rounded-full py-3 pl-12 pr-28"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    form.handleSubmit(onSubmit)();
+                  }
+                }}
+                {...form.register('query')}
+              />
+              <div className="absolute left-3 top-1/2 -translate-y-1/2">
+                <Button variant="ghost" size="icon" type="button" disabled>
+                  <Mic />
+                </Button>
+              </div>
+              <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                <Button type="submit" size="icon" disabled={isPending}>
+                  {isPending ? (
+                    <Loader2 className="animate-spin" />
+                  ) : (
+                    <SendHorizonal />
+                  )}
+                </Button>
+              </div>
+            </form>
+          </Form>
+          <p className="mt-2 text-center text-xs text-muted-foreground">
+            AI can make mistakes. Always verify important information.
+          </p>
         </div>
       </div>
     </div>
