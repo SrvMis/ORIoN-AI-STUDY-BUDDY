@@ -1,8 +1,7 @@
 import { EventEmitter } from 'events';
-import { FirestorePermissionError } from './errors';
 
 type ErrorEvents = {
-  'permission-error': (error: FirestorePermissionError) => void;
+  'permission-error': (error: any) => void;
 };
 
 class TypedEventEmitter<T extends Record<string, (...args: any[]) => void>> {
